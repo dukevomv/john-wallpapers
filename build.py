@@ -18,7 +18,7 @@ and never touches photos that are already built unless you pass --force.
 Requires Pillow:  pip3 install pillow
 """
 
-import os, sys, io, json, base64, colorsys, re, math
+import os, sys, io, json, base64, colorsys, re, math, hashlib
 from PIL import Image, ImageFilter
 
 ROOT   = os.path.dirname(os.path.abspath(__file__))
@@ -154,6 +154,15 @@ def family(thumb_path):
     return max(buckets, key=buckets.get)
 
 
+def placeholder_downloads(slug):
+    h = int(hashlib.sha1(slug.encode()).hexdigest()[:8], 16)
+    # a long tail: most frames modest, a few clear favourites
+    base = 40 + h % 260
+    if h % 7 == 0:
+        base += 300 + h % 500
+    return base
+
+
 def lqip(im):
     """A 20px blur, inlined as a data URI, so nothing ever pops in blank."""
     t = im.copy(); t.thumbnail((20, 20))
@@ -210,6 +219,10 @@ def main():
             'city': where.get('city', ''),
             'country': where.get('country', ''),
             'family': family(thumb),
+            # Placeholder download counts until the Worker is wired up. Derived
+            # from the id so they're stable across rebuilds rather than jumping
+            # every time the site is built.
+            'downloads': placeholder_downloads(slug),
             'lqip': lqip(im),
         }
         entry.update(palette(im))

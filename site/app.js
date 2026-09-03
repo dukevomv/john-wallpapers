@@ -59,7 +59,7 @@ const state = {
   stripScroll: null,        // null = never opened; start at 'now'
   group: 'month',           // 'month' | 'place'
   rows: 2, heroes: true,
-  counts: null            // null until the API answers; {} means "none yet"
+  counts: Object.fromEntries(W.map(x => [x.id, x.downloads || 0]))
 };
 
 const path = {
@@ -661,8 +661,7 @@ function setFilter(key) {
 function updatePackLabel() {
   const set = filtered();
   const mb = Math.round(set.reduce((n, x) => n + x.mb, 0));
-  const name = state.filter === 'all' ? `all ${set.length}` : `the ${FAMILIES[state.filter].label.toLowerCase()} set`;
-  el.packLabel.textContent = `Download ${name} · ${mb} MB`;
+  el.packLabel.textContent = `Download ${set.length} · ${mb} MB`;
   el.packBtn.disabled = !set.length;
 }
 
@@ -819,16 +818,19 @@ async function loadCounts() {
   try {
     const res = await fetch(SITE.api.replace(/\/$/, '') + '/counts');
     if (!res.ok) return;
-    state.counts = await res.json();
+    Object.assign(state.counts, await res.json());   // live numbers win
     render(W[state.index]);
     paintCellSubs();
   } catch { /* counts are a nicety, never a blocker */ }
 }
 
 async function bumpCount(id, { silent = false } = {}) {
-  if (!SITE.api) return;
-  if (!state.counts) state.counts = {};
   state.counts[id] = (state.counts[id] || 0) + 1;      // optimistic
+  if (!SITE.api) {
+    if (!silent && W[state.index].id === id) el.specs.textContent = specsFor(W[state.index]);
+    paintCellSubs();
+    return;
+  }
   if (!silent && W[state.index].id === id) el.specs.textContent = specsFor(W[state.index]);
   try {
     const res = await fetch(SITE.api.replace(/\/$/, '') + '/count', {
@@ -950,36 +952,6 @@ function download(item) {
   bumpCount(item.id);
 }
 
-function screenSize() {
-  const dpr = window.devicePixelRatio || 1;
-  return { w: Math.round(screen.width * dpr), h: Math.round(screen.height * dpr) };
-}
-
-/* Centre-crop the photo to the visitor's exact screen. Returns a Blob, or
-   null when the canvas is unusable (file:// taints it). */
-async function cropToScreen(item) {
-  const { w: tw, h: th } = screenSize();
-  try {
-    const img = new Image();
-    img.decoding = 'async';
-    await new Promise((res, rej) => {
-      img.onload = res; img.onerror = () => rej(new Error('load'));
-      img.src = path.full(item.id);
-    });
-    const cv = document.createElement('canvas');
-    cv.width = tw; cv.height = th;
-    const cx = cv.getContext('2d');
-    const s = Math.max(tw / img.width, th / img.height);
-    const dw = img.width * s, dh = img.height * s;
-    cx.imageSmoothingQuality = 'high';
-    cx.drawImage(img, (tw - dw) / 2, (th - dh) / 2, dw, dh);
-    return await new Promise((res, rej) =>
-      cv.toBlob(b => b ? res(b) : rej(new Error('encode')), 'image/jpeg', 0.94));
-  } catch {
-    return null;
-  }
-}
-
 /* No browser can set a device wallpaper — that API doesn't exist on iOS or
    Android. Handing the photo to the native share sheet is the closest thing:
    from there it's Save Image, then set it from Photos. */
@@ -993,10 +965,14 @@ function wallpaperHint(prefix = '') {
   return '';
 }
 
-async function shareLink(item) {
-  const url = location.origin === 'null'
+function permalink(item) {
+  return location.origin === 'null'
     ? location.href
     : location.origin + location.pathname + `#/w/${item.id}`;
+}
+
+async function shareLink(item) {
+  const url = permalink(item);
   try {
     if (navigator.share) {
       await navigator.share({
@@ -1016,15 +992,22 @@ async function share(item, btn) {
   if ((IS_IOS || IS_ANDROID) && navigator.canShare && navigator.share) {
     btn.classList.add('busy');
     try {
-      let blob = await cropToScreen(item);
-      if (!blob) {
-        const res = await fetch(path.full(item.id));
-        if (res.ok) blob = await res.blob();
-      }
+      // The full frame, untouched — the phone does its own cropping when the
+      // wallpaper is set, and it does it against the real screen.
+      const res = await fetch(path.full(item.id));
+      const blob = res.ok ? await res.blob() : null;
       if (blob) {
         const file = new File([blob], fileName(item), { type: 'image/jpeg' });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: `${item.title} — 2026 Wallpapers` });
+        // Offer the link alongside the file: some share targets take the photo,
+        // others (messages, notes) are far more useful with a URL.
+        const withUrl = {
+          files: [file],
+          title: `${item.title} — 2026 Wallpapers`,
+          url: permalink(item)
+        };
+        const payload = navigator.canShare(withUrl) ? withUrl : { files: [file] };
+        if (navigator.canShare(payload)) {
+          await navigator.share(payload);
           bumpCount(item.id);
           const hint = wallpaperHint();
           if (hint) toast(`Saved — ${hint}`, 5200);
