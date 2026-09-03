@@ -37,7 +37,7 @@ const el = {
   body: document.body,
   viewport: $('#viewport'), track: $('#track'), chrome: $('#chrome'),
   title: $('#title'), place: $('#place'), placeText: $('#placeText'), specs: $('#specs'),
-  swatches: $('#swatches'), meta: $('.meta'), counter: $('#counter'),
+  swatches: $('#swatches'), meta: $('.meta'), brandCount: $('#brandCount'),
   rail: $('#rail'), gallery: $('#gallery'), filters: $('#filters'),
   strip: $('#strip'), stripTrack: $('#stripTrack'),
   scrub: $('#scrub'), scrubBars: $('#scrubBars'), scrubWindow: $('#scrubWindow'),
@@ -228,7 +228,7 @@ function render(item) {
   el.placeText.textContent = item.place;
   el.place.hidden = !item.place;
   el.specs.textContent = specsFor(item);
-  el.counter.textContent = `${String(state.index + 1).padStart(2, '0')} / ${W.length}`;
+  el.brandCount.textContent = `${state.index + 1} / ${W.length}`;
 
   el.swatches.innerHTML = '';
   item.swatches.forEach((c, n) => {
@@ -764,6 +764,7 @@ function showGallery() {
   el.gallery.hidden = false;
   el.body.dataset.view = 'grid';
   el.body.classList.remove('immersive');
+  el.brandCount.textContent = String(W.length);
   $('#viewToggle .chip-btn-label').textContent = 'Single';
   $('#viewToggle').setAttribute('aria-label', 'Back to the single view');
   history.replaceState(null, '', '#/all');
@@ -778,6 +779,7 @@ function showStage() {
   state.view = 'stage';
   el.body.dataset.view = 'stage';
   el.gallery.hidden = true;
+  el.brandCount.textContent = `${state.index + 1} / ${W.length}`;
   $('#viewToggle .chip-btn-label').textContent = 'Timeline';
   $('#viewToggle').setAttribute('aria-label', 'Show the timeline');
   measure(); layout();
@@ -1068,7 +1070,6 @@ function boot() {
   $('.foot-legal-name').textContent = SITE.author;
 
   el.scrub.setAttribute('aria-valuemax', String(W.length));
-  $('#brandCount').textContent = W.length;
 
   buildRail();
   buildYear();
