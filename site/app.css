@@ -487,6 +487,12 @@ body.immersive .arrow{ opacity:0 !important; }
 .mode[aria-selected="true"]{ background:var(--ink); color:var(--deep); font-weight:600; }
 .mode:not([aria-selected="true"]):hover{ color:var(--ink); }
 .cell.hidden{ display:none; }
+/* the frame you came in from */
+.cell.here::before{
+  content:''; position:absolute; inset:0; z-index:3; border-radius:inherit;
+  box-shadow:0 0 0 2px var(--accent), 0 8px 26px -10px var(--accent);
+  pointer-events:none;
+}
 
 .cell{
   position:relative; width:auto; height:auto; min-width:0;
@@ -617,10 +623,6 @@ body.immersive .arrow{ opacity:0 !important; }
 .welcome-go:hover{ background:color-mix(in oklab, var(--accent) 88%, #fff); }
 .welcome-go:active{ transform:scale(.95); }
 @keyframes riseIn{ from{ opacity:0; transform:translateY(16px); } }
-
-/* the spin: frames flick past and settle */
-body.spinning .chrome, body.spinning .topbar{ opacity:.35; }
-body.spinning .slide{ transition:none !important; }
 
 /* toast */
 .toast{

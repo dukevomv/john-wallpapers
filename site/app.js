@@ -759,7 +759,10 @@ async function downloadPack() {
 el.packBtn.addEventListener('click', downloadPack);
 
 /* ── view switching + FLIP ───────────────────────────────── */
-function showGallery() {
+/* showGallery/showStage only change what's on screen. Anything that should be
+   reachable with the back button goes through goGallery/goStage, which push a
+   history entry; the hashchange listener applies whatever the browser lands on. */
+function showGallery({ centreCurrent = true } = {}) {
   state.view = 'grid';
   el.gallery.hidden = false;
   el.body.dataset.view = 'grid';
@@ -767,11 +770,26 @@ function showGallery() {
   el.brandCount.textContent = String(W.length);
   $('#viewToggle .chip-btn-label').textContent = 'Single';
   $('#viewToggle').setAttribute('aria-label', 'Back to the single view');
-  history.replaceState(null, '', '#/all');
   measureStrip();
-  // the newest photographs live at the right-hand end
-  el.strip.scrollLeft = state.stripScroll ?? el.strip.scrollWidth;
+  if (centreCurrent) markCurrentInStrip();
+  else el.strip.scrollLeft = state.stripScroll ?? el.strip.scrollWidth;
   updateScrubWindow();
+}
+
+/* The frame you were looking at keeps its place: marked, and scrolled to. */
+function markCurrentInStrip() {
+  let here = null;
+  el.stripTrack.querySelectorAll('.cell').forEach(c => {
+    const on = Number(c.dataset.i) === state.index;
+    c.classList.toggle('here', on);
+    if (on) here = c;
+  });
+  if (here && !here.classList.contains('hidden')) {
+    const left = here.offsetLeft - (el.strip.clientWidth - here.offsetWidth) / 2;
+    el.strip.scrollLeft = Math.max(0, left);
+  } else {
+    el.strip.scrollLeft = state.stripScroll ?? el.strip.scrollWidth;
+  }
 }
 
 function showStage() {
@@ -783,7 +801,16 @@ function showStage() {
   $('#viewToggle .chip-btn-label').textContent = 'Timeline';
   $('#viewToggle').setAttribute('aria-label', 'Show the timeline');
   measure(); layout();
-  history.replaceState(null, '', `#/w/${W[state.index].id}`);
+}
+
+function goGallery() {
+  showGallery();
+  history.pushState(null, '', '#/all');
+}
+
+function goStage() {
+  showStage();
+  history.pushState(null, '', `#/w/${W[state.index].id}`);
 }
 
 function openFromCell(cell, i) {
@@ -791,7 +818,8 @@ function openFromCell(cell, i) {
   const src = cell.querySelector('img').src;
   state.index = i; state.pos = i;
   showStage();
-  goTo(i, { instant: true });
+  goTo(i, { instant: true, quiet: true });
+  history.pushState(null, '', `#/w/${W[i].id}`);
   if (reduce) return;
 
   const to = (state.slides.get(i) || el.viewport).getBoundingClientRect();
@@ -814,7 +842,7 @@ function openFromCell(cell, i) {
     });
 }
 
-$('#viewToggle').addEventListener('click', () => state.view === 'stage' ? showGallery() : showStage());
+$('#viewToggle').addEventListener('click', () => state.view === 'stage' ? goGallery() : goStage());
 
 /* ── download counts ─────────────────────────────────────── */
 async function loadCounts() {
@@ -1007,7 +1035,7 @@ addEventListener('keydown', e => {
     if (k === 'd') download(W[state.index]);
     if (k === 'escape') el.body.classList.remove('immersive');
   }
-  if (k === 'g') state.view === 'stage' ? showGallery() : showStage();
+  if (k === 'g') state.view === 'stage' ? goGallery() : goStage();
 });
 
 /* ── the opener: a spin that settles on one frame ────────── */
@@ -1017,39 +1045,13 @@ function randomIndex(not) {
   return i;
 }
 
-/* Flicks through a handful of frames and slows into the target. Deliberately a
-   small pool — every distinct frame is an image fetch, and the placeholder
-   blur carries the ones that haven't loaded, which is most of the effect. */
-function spinTo(target) {
-  if (reduce) { goTo(target, { instant: true }); return; }
-
-  const pool = [];
-  while (pool.length < 5) {
-    const i = randomIndex(target);
-    if (!pool.includes(i)) pool.push(i);
-  }
-  const seq = [...pool, pool[0], pool[2], pool[1], target];
-
-  el.body.classList.add('spinning');
-  let n = 0;
-  const step = () => {
-    goTo(seq[n], { instant: true, quiet: n < seq.length - 1 });
-    n++;
-    if (n >= seq.length) {
-      el.body.classList.remove('spinning');
-      return;
-    }
-    setTimeout(step, 68 + Math.pow(n / seq.length, 2.6) * 340);
-  };
-  step();
-}
-
+/* The welcome sits over whatever the page already resolved to, so dismissing it
+   reveals the finished page rather than starting it. */
 (function welcome() {
   const box = $('#welcome'), go = $('#welcomeGo');
   go.addEventListener('click', () => {
     box.classList.add('out');
     setTimeout(() => { box.hidden = true; box.classList.remove('out'); }, 400);
-    spinTo(randomIndex(state.index));
   });
 })();
 
@@ -1083,15 +1085,16 @@ function boot() {
   const start = m ? W.findIndex(x => x.id === m[1]) : -1;
 
   if (start >= 0) {
-    goTo(start, { instant: true });          // a shared link opens on its frame
+    goTo(start, { instant: true });          // a shared link keeps its frame
   } else if (hash === '#/all') {
-    goTo(0, { instant: true });
-    showGallery();
-  } else {
-    // bare index: something behind the welcome, then a spin on the way in
     goTo(randomIndex(-1), { instant: true, quiet: true });
-    $('#welcome').hidden = false;
+    showGallery({ centreCurrent: false });   // arriving here directly: start at now
+  } else {
+    // A bare index opens on any one of them. The hash is left alone so a reload
+    // is a fresh frame rather than the same one again.
+    goTo(randomIndex(-1), { instant: true, quiet: true });
   }
+  $('#welcome').hidden = false;              // shown ahead of whatever loaded
 
   loadCounts();
   requestAnimationFrame(() => el.body.classList.remove('is-loading'));
@@ -1106,12 +1109,18 @@ addEventListener('resize', () => {
   }, 120);
 });
 
+/* Back and forward land here — pushState doesn't fire this, only real
+   navigation does, so applying the hash is always the right response. */
 addEventListener('hashchange', () => {
   const m = location.hash.match(/#\/w\/(.+)$/);
   if (m) {
     const i = W.findIndex(x => x.id === m[1]);
-    if (i >= 0 && i !== state.index) { showStage(); goTo(i); }
-  } else if (location.hash === '#/all' && state.view !== 'grid') showGallery();
+    if (i < 0) return;
+    if (state.view !== 'stage') showStage();
+    if (i !== state.index) goTo(i, { quiet: true });
+  } else if (location.hash === '#/all') {
+    if (state.view !== 'grid') showGallery();
+  }
 });
 
 boot();
