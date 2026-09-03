@@ -225,6 +225,7 @@ function specsFor(item) {
 
 function render(item) {
   el.title.textContent = item.title;
+  el.title.dataset.len = item.title.length > 42 ? 'long' : item.title.length > 24 ? 'mid' : '';
   el.placeText.textContent = item.place;
   el.place.hidden = !item.place;
   el.specs.textContent = specsFor(item);

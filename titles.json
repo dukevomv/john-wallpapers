@@ -47,10 +47,6 @@
   "title": "High Voltage",
   "caption": "Pylons standing in the last gold of the day."
  },
- "IMG20260407192708.jpg": {
-  "title": "Wire Dusk",
-  "caption": "Cables cutting the sunset into strips."
- },
  "IMG20260430180011.jpg": {
   "title": "Leaf Cathedral",
   "caption": "Looking straight up into a green ceiling."
@@ -58,14 +54,6 @@
  "IMG20260430181013.jpg": {
   "title": "Contrail",
   "caption": "One white line drawn across an empty blue."
- },
- "IMG20260430192635.jpg": {
-  "title": "Golden Hour Oak",
-  "caption": "Late sun through an oak, a white house behind it."
- },
- "IMG20260521213758.jpg": {
-  "title": "Gable & Lamp",
-  "caption": "A street lamp against a stepped Dutch gable."
  },
  "IMG20260521222445.jpg": {
   "title": "Candlelight",
@@ -191,10 +179,6 @@
   "title": "Umbrellas",
   "caption": "Glass umbrellas held up on poles against a moving sky."
  },
- "IMG20260405134410.jpg": {
-  "title": "Under Umbrellas",
-  "caption": "Looking up through the umbrella sculpture into the cloud behind it."
- },
  "IMG20260405134922~2.jpg": {
   "title": "Outbound",
   "caption": "A plane crossing high over the gulf, two ships waiting below it."
@@ -266,5 +250,13 @@
  "its here.jpg": {
   "title": "It's Here",
   "caption": "Cool water, cooler hills, the day going out."
+ },
+ "sometimes thats me.jpg": {
+  "title": "Sometimes That's Me",
+  "caption": "One white line drawn across an empty blue."
+ },
+ "Sometimes its right there.jpg": {
+  "title": "Sometimes It's Right There",
+  "caption": "A tangle of black branches over the last pink of the afternoon."
  }
 }

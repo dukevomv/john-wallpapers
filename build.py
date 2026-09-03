@@ -125,7 +125,7 @@ def gps_of(im):
     return lat, lon
 
 
-def place_of(coords, filename, places):
+def place_of(coords, filename, places, slug='', manual_by_id=None):
     """The matched place row, or {}. Returns the whole row so city and country
     come along for the 'By place' timeline.
 
@@ -133,7 +133,9 @@ def place_of(coords, filename, places):
     consulted only when GPS was missing, which meant a photo whose coordinates
     fell outside every radius silently lost its location with no way to set one.
     """
-    manual = places.get('manual', {}).get(filename, '')
+    # by filename, or by id — so renaming a file to title it doesn't drop the
+    # location that was set by hand for it
+    manual = places.get('manual', {}).get(filename, '') or (manual_by_id or {}).get(slug, '')
     if manual:
         for p in places['places']:
             if p['label'] == manual:
@@ -238,14 +240,21 @@ def main():
         os.makedirs(os.path.join(OUT, sub), exist_ok=True)
 
     titles = json.load(open(TITLES)) if os.path.exists(TITLES) else {}
-    # A re-export can change the filename ("~2") without changing the moment,
-    # so fall back to matching on the derived id.
+    places = json.load(open(PLACES)) if os.path.exists(PLACES) else {'places': [], 'manual': {}}
+
+    # Renaming a file to title it changes the key but not the moment, so both
+    # the hand-set title and the hand-set location also match on the derived id.
     titles_by_slug = {}
     for name, meta in titles.items():
         p = parts_from_name(name)
         if p:
             titles_by_slug.setdefault(slug_of(p)[0], meta)
-    places = json.load(open(PLACES)) if os.path.exists(PLACES) else {'places': [], 'manual': {}}
+
+    manual_by_id = {}
+    for name, label in places.get('manual', {}).items():
+        p = parts_from_name(name)
+        if p:
+            manual_by_id.setdefault(slug_of(p)[0], label)
     files = sorted(f for f in os.listdir(SRC) if f.lower().endswith(('.jpg', '.jpeg', '.png')))
     if not files:
         sys.exit(f'No photographs in {SRC}')
@@ -287,7 +296,7 @@ def main():
         exact = titles.get(filename) or {}
         prior = titles_by_slug.get(slug) or {}
         from_name = title_in_filename(filename)
-        where = place_of(coords, filename, places)
+        where = place_of(coords, filename, places, slug, manual_by_id)
         entry = {
             'id': slug, 'src': filename, 'w': width, 'h': height,
             'date': date, 'month': month, 'monthName': MONTHS[month] if month else '',
