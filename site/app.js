@@ -1061,18 +1061,6 @@ addEventListener('keydown', e => {
   if (k === 'g') state.view === 'stage' ? showGallery() : showStage();
 });
 
-/* Written out rather than a numeral — it's a headline, and it has to stay
-   right when photographs are added. */
-const ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten',
-  'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
-const TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
-function spell(n) {
-  if (n < 20) return ONES[n];
-  if (n > 99) return String(n);
-  const t = TENS[Math.floor(n / 10)], o = n % 10;
-  return o ? `${t}-${ONES[o]}` : t;
-}
-
 /* ── boot ────────────────────────────────────────────────── */
 function boot() {
   // On a phone that can share files, this button saves the photo rather than a link
@@ -1083,9 +1071,7 @@ function boot() {
   $('.foot-legal-name').textContent = SITE.author;
 
   el.scrub.setAttribute('aria-valuemax', String(W.length));
-  const headline = spell(W.length);
-  $('.gallery-intro h2').textContent =
-    headline.charAt(0).toUpperCase() + headline.slice(1) + ' frames from 2026';
+  $('#brandCount').textContent = W.length;
 
   buildRail();
   buildYear();

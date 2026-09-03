@@ -59,6 +59,12 @@ that. If you edit it, the rules to be careful with:
   repaint per frame for the length of `--tint`. Large surfaces (the wash, the
   scrims) use static `rgba()` on mobile so they stay out of it, and `--tint` is
   shortened there.
+- **`body` must never be `overflow: hidden`.** Body overflow propagates to the
+  viewport, and a viewport that cannot scroll is one where Chrome switches off
+  pull-to-refresh. Only the horizontal axis is clipped (`overflow-x: hidden`);
+  each view is exactly `100dvh`, so nothing scrolls vertically anyway. Same for
+  `overscroll-behavior`: use the `-x` longhand, since the shorthand pins the
+  vertical axis that the gesture rides on.
 - **`.gallery[hidden]` needs its own rule.** `.gallery` sets `display:flex`,
   which beats the browser's `[hidden]` rule — without it the whole gallery stays
   laid out below the fold and keeps re-animating on every swipe.
