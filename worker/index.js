@@ -5,14 +5,24 @@
  *   POST /count         { id }     -> { id, count }
  *   POST /subscribe     { email }  -> { ok: true }
  *
- * Backed by Workers KV, one key per wallpaper. KV is eventually consistent, so
- * a freshly incremented number can take a moment to show up everywhere — fine
- * for a download tally, and it keeps the whole thing on the free tier with only
- * a KV binding to configure.
+ * Backed by Workers KV: one key per wallpaper (`c:<id>`), one per subscriber
+ * (`s:<email>`), plus `idx`, a plain list of every id that has ever been
+ * counted.
+ *
+ * `idx` exists so /counts never calls KV.list(). List is eventually consistent
+ * in a way get is not — a freshly written key can take up to a minute to be
+ * listable, which showed up as counts "resetting" on the next page load.
  */
 
 const ID_RE    = /^[0-9a-z-]{4,64}$/;
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s.]{1,63}(\.[^@\s.]{1,63})+$/;
+
+const corsHeaders = origin => ({
+  'access-control-allow-origin': origin,
+  'access-control-allow-headers': 'content-type',
+  'access-control-allow-methods': 'GET,POST,OPTIONS',
+  'access-control-max-age': '86400',
+});
 
 const json = (body, status, origin) =>
   new Response(JSON.stringify(body), {
@@ -20,9 +30,7 @@ const json = (body, status, origin) =>
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
-      'access-control-allow-origin': origin,
-      'access-control-allow-headers': 'content-type',
-      'access-control-allow-methods': 'GET,POST,OPTIONS',
+      ...corsHeaders(origin),
     },
   });
 
@@ -35,26 +43,48 @@ async function body(request) {
   }
 }
 
+async function readIndex(env) {
+  try {
+    const raw = await env.KV.get('idx');
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
 export default {
   async fetch(request, env) {
     const origin = env.ALLOW_ORIGIN || '*';
     const { pathname } = new URL(request.url);
 
-    if (request.method === 'OPTIONS') return json({}, 204, origin);
+    // A 204 must not carry a body — building one with a body throws, and this
+    // runs before the try/catch, so it surfaced as a 500 on every preflight.
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+    }
 
     try {
       if (request.method === 'GET' && pathname === '/counts') {
+        let ids = await readIndex(env);
+
+        // One-time heal: if the index is missing but counters already exist,
+        // rebuild it from a list. Only ever runs once.
+        if (!ids.length) {
+          let cursor;
+          do {
+            const page = await env.KV.list({ prefix: 'c:', cursor });
+            ids.push(...page.keys.map(k => k.name.slice(2)));
+            cursor = page.list_complete ? null : page.cursor;
+          } while (cursor);
+          if (ids.length) await env.KV.put('idx', JSON.stringify(ids));
+        }
+
+        const rows = await Promise.all(
+          ids.map(async id => [id, Number(await env.KV.get('c:' + id)) || 0])
+        );
         const counts = {};
-        let cursor;
-        do {
-          const page = await env.KV.list({ prefix: 'c:', cursor });
-          const rows = await Promise.all(page.keys.map(async k => {
-            const v = await env.KV.get(k.name);
-            return [k.name.slice(2), Number(v) || 0];
-          }));
-          for (const [id, n] of rows) if (n) counts[id] = n;
-          cursor = page.list_complete ? null : page.cursor;
-        } while (cursor);
+        for (const [id, n] of rows) if (n) counts[id] = n;
         return json(counts, 200, origin);
       }
 
@@ -66,6 +96,14 @@ export default {
         const key = 'c:' + id;
         const next = (Number(await env.KV.get(key)) || 0) + 1;
         await env.KV.put(key, String(next));
+
+        if (next === 1) {                       // first download of this frame
+          const ids = await readIndex(env);
+          if (!ids.includes(id)) {
+            ids.push(id);
+            await env.KV.put('idx', JSON.stringify(ids));
+          }
+        }
         return json({ id, count: next }, 200, origin);
       }
 

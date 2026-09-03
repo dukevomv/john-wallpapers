@@ -18,14 +18,32 @@ Ids and email addresses are validated before anything is written.
 
 ## Storage
 
-Workers KV, namespace `wallpapers`, one key per record:
+Workers KV, namespace `wallpapers`:
 
 - `c:<wallpaper-id>` — the download tally for that frame
 - `s:<email>` — a subscriber, value is the ISO date they joined
+- `idx` — a plain list of every id that has ever been counted
 
-KV is eventually consistent: a fresh increment can take up to a minute to show
-up in `/counts` everywhere. The site increments optimistically on the client, so
-the person who just downloaded sees their own number move immediately.
+`idx` is why `/counts` never calls `KV.list()`. List is eventually consistent in
+a way `get` is not: a freshly written key can take up to a minute to become
+listable, which showed up as counts appearing to reset on the next page load.
+Reading the index and then getting each key returns the new number immediately.
+
+## Two things to keep in mind when editing this
+
+- **A 204 response must not have a body.** `new Response(JSON.stringify(...),
+  {status: 204})` throws in the Workers runtime. The OPTIONS handler runs before
+  the try/catch, so that surfaced as a 500 on every CORS preflight — which meant
+  browsers silently blocked every write, while `curl` worked fine.
+- **`curl` does not send preflights.** Testing a cross-origin API with curl alone
+  will pass even when every browser is being refused. Test OPTIONS explicitly:
+
+  ```sh
+  curl -i -X OPTIONS https://wallpapers-api.dukevomv.workers.dev/count \
+    -H "Origin: https://john-wallpapers.pages.dev" \
+    -H "Access-Control-Request-Method: POST" \
+    -H "Access-Control-Request-Headers: content-type"
+  ```
 
 Counts started from zero on the day the Worker went up. They are real, not
 seeded — the `downloads` numbers in `w/index.js` are only a stand-in used when
