@@ -71,7 +71,32 @@ Use it for a photo with no GPS, or to correct one whose coordinates are wrong.
 > assuming it has none — the fix is usually a new row in `places`, not a manual
 > entry.
 
-## 3. Titles and captions are the one hand-written part
+## 3. Naming by filename
+
+The simplest way to title a photograph is to put the title in the filename. Two
+shapes both work:
+
+```
+IMG20260624082111 Foam.jpg          →  "Foam"
+IMG20260624082111_gull-and-foam.jpg →  "Gull and Foam"
+no meetings.jpg                     →  "No Meetings"
+IMG20260624082111~2.jpg             →  no title (a re-export marker, ignored)
+```
+
+Separators are interchangeable, a trailing `~N` is always ignored, and the
+result is title-cased — small words stay lower, a genuine acronym in mixed case
+survives, and A NAME IN CAPS is calmed down.
+
+**Dropping the timestamp is fine.** If the filename no longer carries one, the
+date comes from EXIF `DateTimeOriginal` instead, so the frame keeps its id, its
+permalink and its place on the timeline. A photo with neither is skipped and
+reported — that's the only way to lose one.
+
+A filename title beats `titles.json`. The caption still comes from
+`titles.json`, matched on the id, so renaming a file to name it does **not**
+lose the alt text it already had.
+
+## 4. Titles and captions by hand
 
 `titles.json`, keyed by the original filename:
 
@@ -87,7 +112,7 @@ The **caption is never printed on the page**; it's the image's `alt` text, which
 is what a screen reader announces. Write it as a description of the photograph,
 not as marketing.
 
-## 4. Everything else is derived — don't hand-write it
+## 5. Everything else is derived — don't hand-write it
 
 For each photo the build produces, into `site/w/index.js`:
 
@@ -102,7 +127,7 @@ For each photo the build produces, into `site/w/index.js`:
 | `series` | the month block it belongs to |
 | `downloads` | a two-digit fallback derived from the id, used only when no API is set |
 
-## 5. What the build guarantees
+## 6. What the build guarantees
 
 - **Output images carry no EXIF.** Pillow re-encodes without metadata, so none
   of the GPS that produced "Parga, Greece" is downloadable from the site. This
@@ -112,7 +137,7 @@ For each photo the build produces, into `site/w/index.js`:
   only copies that still hold GPS.
 - **Ids are stable**, so permalinks and download counts survive a rebuild.
 
-## 6. One year only
+## 7. One year only
 
 `build.py` has a `YEAR` constant. Anything whose filename date falls outside it
 is skipped and reported, so a stray photo from another year can't slip into the
@@ -123,13 +148,13 @@ the deploy.
 Titles survive a re-export. If a file comes back as `IMG…~2.jpg`, the same
 moment resolves to the same id, and the title is matched on that.
 
-## 7. Shape of the photographs
+## 8. Shape of the photographs
 
 Portrait 9:16 is the target — they're phone wallpapers. Landscape frames build
 fine and appear throughout, but they're cropped to portrait in the viewer, the
 same way a phone would crop them.
 
-## 8. After a rebuild
+## 9. After a rebuild
 
 `build.py` rewrites `site/w/index.js` only. Commit that alongside the new files
 in `site/w/`, push, and the deploy runs itself.

@@ -41,15 +41,67 @@ def hex_of(c):
     return '#%02x%02x%02x' % tuple(int(max(0, min(255, v))) for v in c)
 
 
-def slug_of(filename):
-    """IMG20260624082111.jpg -> 2026-06-24-082111. Falls back to the bare name."""
+def parts_from_name(filename):
+    """The timestamp a phone puts in the filename, if it's still there."""
     m = re.match(r'IMG(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})', filename)
-    if m:
-        y, mo, d, h, mi, s = m.groups()
-        return f'{y}-{mo}-{d}-{h}{mi}{s}', f'{y}-{mo}-{d}', int(mo)
+    return m.groups() if m else None
+
+
+def parts_from_exif(im):
+    """The capture time out of EXIF — the fallback once a file has been renamed
+    to something human, which is the whole point of naming by filename."""
+    ex = im.getexif()
+    if not ex:
+        return None
+    candidates = [ex.get(306)]                       # DateTime, on IFD0
+    try:
+        sub = ex.get_ifd(0x8769)                     # the Exif sub-IFD
+        candidates = [sub.get(36867), sub.get(36868)] + candidates
+    except Exception:
+        pass
+    for v in candidates:
+        if isinstance(v, str):
+            m = re.match(r'(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})', v)
+            if m:
+                return m.groups()
+    return None
+
+
+def slug_of(parts):
+    y, mo, d, h, mi, s = parts
+    return f'{y}-{mo}-{d}-{h}{mi}{s}', f'{y}-{mo}-{d}', int(mo)
+
+
+def title_in_filename(filename):
+    """Anything you append to the timestamp becomes the frame's title, so a
+    photo can be named by renaming the file:
+
+        IMG20260624082111 Foam.jpg          -> "Foam"
+        IMG20260624082111_gull-and-foam.jpg -> "Gull And Foam"
+        IMG20260624082111~2.jpg             -> nothing (a re-export marker)
+
+    Separators are interchangeable; a trailing ~N is always ignored.
+    """
     stem = os.path.splitext(filename)[0]
-    stem = re.sub(r'[^A-Za-z0-9]+', '-', stem).strip('-').lower()
-    return stem, '', 0
+    m = re.match(r'IMG\d{14}(.*)$', stem)
+    rest = m.group(1) if m else stem                 # no timestamp? the name IS the title
+    rest = re.sub(r'^~\d+', '', rest)                # drop the re-export marker
+    rest = re.sub(r'[_\-.]+', ' ', rest).strip()
+    if not re.search(r'[A-Za-z]', rest):
+        return ''
+    small = {'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'from', 'in', 'nor',
+             'of', 'on', 'or', 'over', 'the', 'to', 'under', 'with'}
+    shouting = not any(c.islower() for c in rest)   # A WHOLE NAME IN CAPS
+    words = [w for w in rest.split() if w]
+    out = []
+    for i, w in enumerate(words):
+        if not shouting and w.isupper() and len(w) > 1:
+            out.append(w)                            # a real acronym, left alone
+        elif i and w.lower() in small:
+            out.append(w.lower())
+        else:
+            out.append(w[:1].upper() + w[1:].lower())
+    return ' '.join(out)
 
 
 def gps_of(im):
@@ -187,7 +239,9 @@ def main():
     # so fall back to matching on the derived id.
     titles_by_slug = {}
     for name, meta in titles.items():
-        titles_by_slug.setdefault(slug_of(name)[0], meta)
+        p = parts_from_name(name)
+        if p:
+            titles_by_slug.setdefault(slug_of(p)[0], meta)
     places = json.load(open(PLACES)) if os.path.exists(PLACES) else {'places': [], 'manual': {}}
     files = sorted(f for f in os.listdir(SRC) if f.lower().endswith(('.jpg', '.jpeg', '.png')))
     if not files:
@@ -195,8 +249,14 @@ def main():
 
     skipped = []
     data, built = [], 0
+    undated = []
     for filename in files:
-        slug, date, month = slug_of(filename)
+        source = Image.open(os.path.join(SRC, filename))
+        parts = parts_from_name(filename) or parts_from_exif(source)
+        if not parts:
+            undated.append(filename)
+            continue
+        slug, date, month = slug_of(parts)
         if not date.startswith(f'{YEAR}-'):
             skipped.append(filename)
             continue
@@ -204,7 +264,6 @@ def main():
         view  = os.path.join(OUT, 'view',  slug + '.webp')
         thumb = os.path.join(OUT, 'thumb', slug + '.webp')
 
-        source = Image.open(os.path.join(SRC, filename))
         coords = gps_of(source)
         im = source.convert('RGB')
         width, height = im.size
@@ -219,6 +278,7 @@ def main():
             print(f'  built  {slug}')
 
         meta = titles.get(filename) or titles_by_slug.get(slug) or {}
+        from_name = title_in_filename(filename)     # a renamed file wins
         where = place_of(coords, filename, places)
         entry = {
             'id': slug, 'src': filename, 'w': width, 'h': height,
@@ -227,7 +287,7 @@ def main():
             'orient': 'portrait' if height >= width else 'landscape',
             'ratio': round(width / height, 4),
             'mb': round(os.path.getsize(full) / 1048576, 2),
-            'title': meta.get('title') or slug,
+            'title': from_name or meta.get('title') or slug,
             'caption': meta.get('caption') or '',
             'place': meta.get('place') or where.get('label', ''),
             'city': where.get('city', ''),
@@ -292,6 +352,9 @@ def main():
           f' · {built} newly built · {removed} stale files swept · index.js written')
     if skipped:
         print(f'{len(skipped)} skipped — not from {YEAR}: ' + ', '.join(skipped[:6]))
+    if undated:
+        print(f'{len(undated)} skipped — no date in the filename and none in EXIF: '
+              + ', '.join(undated[:6]))
 
     for label, key, where in (('title/caption', 'caption', 'titles.json'),
                               ('location', 'place', 'places.json ("manual")')):
