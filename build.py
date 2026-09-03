@@ -70,15 +70,25 @@ def gps_of(im):
 
 
 def place_of(coords, filename, places):
+    """The matched place row, or {}. Returns the whole row so city and country
+    come along for the 'By place' timeline."""
     if not coords:
-        return places.get('manual', {}).get(filename, '')
+        manual = places.get('manual', {}).get(filename, '')
+        if not manual:
+            return {}
+        for p in places['places']:
+            if p['label'] == manual:
+                return p
+        head, _, tail = manual.partition(',')
+        return {'label': manual, 'city': head.strip(), 'country': tail.strip()}
+
     lat, lon = coords
-    best, best_km = '', 1e9
+    best, best_km = {}, 1e9
     for p in places['places']:
         km = math.hypot((lat - p['lat']) * 111.0,
                         (lon - p['lon']) * 111.0 * math.cos(math.radians(lat)))
         if km <= p['radiusKm'] and km < best_km:
-            best, best_km = p['label'], km
+            best, best_km = p, km
     return best
 
 
@@ -186,6 +196,7 @@ def main():
             print(f'  built  {slug}')
 
         meta = titles.get(filename) or {}
+        where = place_of(coords, filename, places)
         entry = {
             'id': slug, 'src': filename, 'w': width, 'h': height,
             'date': date, 'month': month, 'monthName': MONTHS[month] if month else '',
@@ -195,7 +206,9 @@ def main():
             'mb': round(os.path.getsize(full) / 1048576, 2),
             'title': meta.get('title') or slug,
             'caption': meta.get('caption') or '',
-            'place': meta.get('place') or place_of(coords, filename, places),
+            'place': meta.get('place') or where.get('label', ''),
+            'city': where.get('city', ''),
+            'country': where.get('country', ''),
             'family': family(thumb),
             'lqip': lqip(im),
         }
@@ -215,11 +228,29 @@ def main():
         current['ids'].append(entry['id'])
         entry['series'] = len(series) - 1
 
+    # Country -> city, biggest first at both levels. Frames keep their shot
+    # order inside a city.
+    by_country = {}
+    for entry in data:
+        if not entry['country']:
+            continue
+        by_country.setdefault(entry['country'], {}).setdefault(entry['city'], []).append(entry['id'])
+
+    countries = []
+    for country, cities in by_country.items():
+        blocks = [{'city': c, 'ids': list(reversed(ids))} for c, ids in cities.items()]
+        blocks.sort(key=lambda b: -len(b['ids']))
+        countries.append({'country': country,
+                          'count': sum(len(b['ids']) for b in blocks),
+                          'cities': blocks})
+    countries.sort(key=lambda c: -c['count'])
+
     with open(os.path.join(OUT, 'index.js'), 'w') as f:
         f.write('window.WALLPAPERS=' + json.dumps(data, separators=(',', ':')) + ';\n')
         f.write('window.SERIES=' + json.dumps(series, separators=(',', ':')) + ';\n')
+        f.write('window.PLACES=' + json.dumps(countries, separators=(',', ':')) + ';\n')
 
-    print(f'\n{len(data)} wallpapers · {len(series)} series · {built} newly built · index.js written')
+    print(f'\n{len(data)} wallpapers · {len(series)} months · {len(countries)} countries · {built} newly built · index.js written')
 
     for label, key, where in (('title/caption', 'caption', 'titles.json'),
                               ('location', 'place', 'places.json ("manual")')):

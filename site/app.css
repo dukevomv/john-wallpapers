@@ -414,7 +414,11 @@ body.immersive .arrow{ opacity:0 !important; }
   display:flex; align-items:center; gap:calc(var(--cellGap, 10px) * 2.6);
   height:100%; width:max-content;
 }
-.grp{ display:flex; flex-direction:column; gap:9px; }
+/* a section is a month, or a country broken into its cities */
+.sec{ display:flex; flex-direction:column; gap:9px; }
+.sec.hidden{ display:none; }
+.sec-body{ display:flex; align-items:flex-start; gap:calc(var(--cellGap, 10px) * 2.2); }
+.grp{ display:flex; flex-direction:column; gap:8px; }
 .grp.hidden{ display:none; }
 .grp-cells{
   display:grid;
@@ -439,6 +443,27 @@ body.immersive .arrow{ opacity:0 !important; }
   font-style:normal; font-size:10px; letter-spacing:.14em;
   color:var(--muted); font-variant-numeric:tabular-nums;
 }
+/* the city line, under a country */
+.sep-sub{ padding-bottom:5px; border-bottom-color:color-mix(in oklab, var(--ink) 9%, transparent); }
+.sep-sub b{
+  font-family:var(--sans); font-size:12.5px; font-weight:600; letter-spacing:.02em;
+  color:color-mix(in oklab, var(--ink) 76%, transparent);
+}
+.sep-sub em{ font-size:9px; }
+
+/* month / place switch */
+.modes{
+  display:flex; gap:2px; padding:3px; border-radius:999px;
+  background:color-mix(in oklab, var(--ink) 7%, transparent);
+  border:1px solid color-mix(in oklab, var(--ink) 11%, transparent);
+}
+.mode{
+  padding:6px 14px; border-radius:999px; white-space:nowrap;
+  font-size:12px; color:color-mix(in oklab, var(--ink) 62%, transparent);
+  transition:background var(--move), color var(--move);
+}
+.mode[aria-selected="true"]{ background:var(--ink); color:var(--deep); font-weight:600; }
+.mode:not([aria-selected="true"]):hover{ color:var(--ink); }
 .cell.hidden{ display:none; }
 
 .cell{
@@ -680,7 +705,10 @@ body:not(.is-loading) .topbar{ transition:opacity 800ms ease 120ms, transform va
   .pack{ width:100%; justify-content:center; }
   .sep{ padding-bottom:5px; gap:7px; }
   .sep b{ font-size:16px; }
-  .grp{ gap:7px; }
+  .sep-sub b{ font-size:11.5px; }
+  .grp{ gap:6px; }
+  .sec{ gap:7px; }
+  .mode{ padding:6px 12px; font-size:11.5px; }
 
   .foot{ padding-top:10px; margin-top:8px; gap:8px 20px; }
   .foot-join label{ margin-bottom:4px; font-size:9px; }

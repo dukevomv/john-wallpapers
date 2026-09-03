@@ -1,83 +1,109 @@
 {
- "_comment": "Each photo's GPS is matched to the nearest place within radiusKm. Labels are city/area level on purpose — the exact coordinates never reach the website. Add a row for any new place; if nothing matches, the photo simply shows no location.",
+ "_comment": "Each photo's GPS is matched to the nearest place within radiusKm. Labels are city/area level on purpose — the exact coordinates never reach the website. city/country drive the 'By place' timeline. Add a row for any new place; if nothing matches, the photo simply shows no location.",
  "places": [
   {
    "label": "Turin, Italy",
    "lat": 45.0794,
    "lon": 7.6746,
-   "radiusKm": 12
+   "radiusKm": 12,
+   "city": "Turin",
+   "country": "Italy"
   },
   {
    "label": "Susa Valley, Italy",
    "lat": 45.0228,
    "lon": 6.8591,
-   "radiusKm": 25
+   "radiusKm": 25,
+   "city": "Susa Valley",
+   "country": "Italy"
   },
   {
    "label": "Haarlem, Netherlands",
    "lat": 52.3761,
    "lon": 4.634,
-   "radiusKm": 9
+   "radiusKm": 9,
+   "city": "Haarlem",
+   "country": "Netherlands"
   },
   {
    "label": "Amsterdam, Netherlands",
    "lat": 52.3762,
    "lon": 4.8913,
-   "radiusKm": 9
+   "radiusKm": 9,
+   "city": "Amsterdam",
+   "country": "Netherlands"
   },
   {
    "label": "Schiphol, Netherlands",
    "lat": 52.3085,
    "lon": 4.7624,
-   "radiusKm": 7
+   "radiusKm": 7,
+   "city": "Schiphol",
+   "country": "Netherlands"
   },
   {
    "label": "The Hague, Netherlands",
    "lat": 52.0716,
    "lon": 4.3672,
-   "radiusKm": 12
+   "radiusKm": 12,
+   "city": "The Hague",
+   "country": "Netherlands"
   },
   {
    "label": "Epirus, Greece",
    "lat": 39.501,
    "lon": 20.18,
-   "radiusKm": 20
+   "radiusKm": 20,
+   "city": "Epirus",
+   "country": "Greece"
   },
   {
    "label": "South Evia, Greece",
    "lat": 38.0921,
    "lon": 24.5779,
-   "radiusKm": 20
+   "radiusKm": 20,
+   "city": "South Evia",
+   "country": "Greece"
   },
   {
    "label": "Athens, Greece",
    "lat": 38.078,
    "lon": 23.8556,
-   "radiusKm": 25
+   "radiusKm": 25,
+   "city": "Athens",
+   "country": "Greece"
   },
   {
    "label": "Chania, Crete",
    "lat": 35.5166,
    "lon": 24.0232,
-   "radiusKm": 15
+   "radiusKm": 15,
+   "city": "Chania",
+   "country": "Greece"
   },
   {
    "label": "Thessaloniki, Greece",
    "lat": 40.6119,
    "lon": 22.9515,
-   "radiusKm": 15
+   "radiusKm": 15,
+   "city": "Thessaloniki",
+   "country": "Greece"
   },
   {
    "label": "Parga, Greece",
    "lat": 39.2845,
    "lon": 20.403,
-   "radiusKm": 8
+   "radiusKm": 8,
+   "city": "Parga",
+   "country": "Greece"
   },
   {
    "label": "Preveza, Greece",
    "lat": 38.955,
    "lon": 20.753,
-   "radiusKm": 10
+   "radiusKm": 10,
+   "city": "Preveza",
+   "country": "Greece"
   }
  ],
  "_manual": "Photos with no GPS at all. Fill in a label here and re-run build.py.",

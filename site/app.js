@@ -19,6 +19,8 @@ const SITE = {
 
 const W = window.WALLPAPERS;
 const SERIES = window.SERIES || [];
+const PLACES = window.PLACES || [];
+const INDEX_OF = new Map(W.map((x, i) => [x.id, i]));
 const $ = (s, r = document) => r.querySelector(s);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -55,6 +57,7 @@ const state = {
   slides: new Map(),
   blurTop: 'a',
   stripScroll: null,        // null = never opened; start at 'now'
+  group: 'month',           // 'month' | 'place'
   rows: 2, heroes: true,
   counts: null            // null until the API answers; {} means "none yet"
 };
@@ -380,68 +383,127 @@ function buildYear() {
 
 /* ── gallery: one long horizontal strip, split into the series
       they were shot in, so near-identical frames stay together ── */
-function buildStrip() {
-  const frag = document.createDocumentFragment();
-  let cells = null, seriesIndex = -1;
+/* The timeline is rendered from a plan, so the same layout serves both
+   groupings: months running old → new, or countries broken into cities. */
+function stripPlan() {
+  if (state.group === 'place') {
+    return PLACES.map(c => ({
+      label: c.country,
+      count: c.count,
+      blocks: c.cities.map(b => ({ label: b.city, indices: b.ids.map(id => INDEX_OF.get(id)) }))
+    }));
+  }
+  // W is newest-first for the viewer; a timeline reads the other way.
+  return [...SERIES].reverse().map(s => ({
+    label: s.monthName,
+    count: s.ids.length,
+    blocks: [{ label: '', indices: [...s.ids].reverse().map(id => INDEX_OF.get(id)) }]
+  }));
+}
 
-  // The data is newest-first for the viewer; a timeline has to read the other
-  // way, so walk it backwards. Series are contiguous, so they stay intact.
-  for (const i of [...W.keys()].reverse()) {
-    const item = W[i];
-    if (item.series !== seriesIndex) {
-      seriesIndex = item.series;
-      const s = SERIES[seriesIndex];
-      const group = document.createElement('div');
-      group.className = 'grp';
-      group.dataset.series = seriesIndex;
-      const sep = document.createElement('div');
-      sep.className = 'sep';
-      sep.innerHTML = `<b>${s.monthName}</b><em>${s.ids.length}</em>`;
-      cells = document.createElement('div');
+function makeCell(i) {
+  const item = W[i];
+  const c = document.createElement('button');
+  c.className = 'cell';
+  c.dataset.i = i;
+  c.dataset.family = item.family;
+  c.setAttribute('aria-label', `Open ${item.title}`);
+  c.innerHTML =
+    `<img src="${item.lqip}" data-src="${path.thumb(item.id)}" alt="${item.title}">
+     <i class="cell-dot" style="background:${item.accent}"></i>
+     <span class="cell-label"><b>${item.title}</b><span class="cell-sub"></span></span>`;
+  c.addEventListener('click', () => openFromCell(c, i));
+  return c;
+}
+
+let lazyCells = null;
+function renderStrip() {
+  if (lazyCells) lazyCells.disconnect();
+  el.stripTrack.textContent = '';
+  el.scrubBars.textContent = '';
+
+  const cellFrag = document.createDocumentFragment();
+  const scrubFrag = document.createDocumentFragment();
+
+  for (const section of stripPlan()) {
+    const sec = document.createElement('div');
+    sec.className = 'sec';
+
+    const head = document.createElement('div');
+    head.className = 'sep';
+    head.innerHTML = `<b>${section.label}</b><em>${section.count}</em>`;
+
+    const body = document.createElement('div');
+    body.className = 'sec-body';
+
+    for (const block of section.blocks) {
+      const grp = document.createElement('div');
+      grp.className = 'grp';
+      if (block.label) {
+        const sub = document.createElement('div');
+        sub.className = 'sep sep-sub';
+        sub.innerHTML = `<b>${block.label}</b><em>${block.indices.length}</em>`;
+        grp.appendChild(sub);
+      }
+      const cells = document.createElement('div');
       cells.className = 'grp-cells';
-      group.append(sep, cells);
-      frag.appendChild(group);
+      for (const i of block.indices) {
+        cells.appendChild(makeCell(i));
+        const bar = document.createElement('i');
+        bar.style.background = W[i].accent;
+        bar.dataset.i = i;
+        scrubFrag.appendChild(bar);
+      }
+      grp.appendChild(cells);
+      body.appendChild(grp);
     }
 
-    const c = document.createElement('button');
-    c.className = 'cell';
-    c.dataset.i = i;
-    c.dataset.family = item.family;
-    c.setAttribute('aria-label', `Open ${item.title}`);
-    c.innerHTML =
-      `<img src="${item.lqip}" data-src="${path.thumb(item.id)}" alt="${item.title}">
-       <i class="cell-dot" style="background:${item.accent}"></i>
-       <span class="cell-label"><b>${item.title}</b><span class="cell-sub"></span></span>`;
-    c.addEventListener('click', () => openFromCell(c, i));
-    cells.appendChild(c);
+    sec.append(head, body);
+    cellFrag.appendChild(sec);
   }
 
-  el.stripTrack.appendChild(frag);
+  el.stripTrack.appendChild(cellFrag);
+  el.scrubBars.appendChild(scrubFrag);
+  el.strip.dataset.group = state.group;
+
   measureStrip();
   paintCellSubs();
 
-  const lazy = new IntersectionObserver(es => {
+  lazyCells = new IntersectionObserver(es => {
     es.forEach(e => {
       if (!e.isIntersecting) return;
       const img = e.target.querySelector('img');
       if (img && img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
       e.target.classList.add('in');
-      lazy.unobserve(e.target);
+      lazyCells.unobserve(e.target);
     });
   }, { root: el.strip, rootMargin: '600px' });
-  el.stripTrack.querySelectorAll('.cell').forEach(c => lazy.observe(c));
+  el.stripTrack.querySelectorAll('.cell').forEach(c => lazyCells.observe(c));
 }
 
-/* Two rows per series on a wide screen. An odd count would leave a hole, so the
-   last frame grows into it — which is why the strip is punctuated by big cards.
-   One row on a phone, where every cell stays the same size. */
+function setGroup(mode) {
+  if (mode === state.group) return;
+  state.group = mode;
+  [...$('#modes').children].forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === mode)));
+  renderStrip();
+  if (state.filter !== 'all') setFilter(state.filter);
+  // months end at now, on the right; places start with the biggest, on the left
+  el.strip.scrollLeft = mode === 'month' ? el.strip.scrollWidth : 0;
+  updateScrubWindow();
+}
+
+/* Two rows per series. An odd count would leave a hole, so the last frame
+   grows into it — which is why the strip is punctuated by big cards.
+   On a phone the odd frame keeps its size and centres across both rows. */
 function layoutGroups() {
-  const heroes = true;   // the odd frame always gets .hero; CSS decides how it grows
   el.stripTrack.querySelectorAll('.grp').forEach(group => {
     const visible = [...group.querySelectorAll('.cell:not(.hidden)')];
     group.classList.toggle('hidden', visible.length === 0);
     visible.forEach((c, n) =>
-      c.classList.toggle('hero', heroes && visible.length % 2 === 1 && n === visible.length - 1));
+      c.classList.toggle('hero', visible.length % 2 === 1 && n === visible.length - 1));
+  });
+  el.stripTrack.querySelectorAll('.sec').forEach(sec => {
+    sec.classList.toggle('hidden', !sec.querySelector('.grp:not(.hidden)'));
   });
 }
 
@@ -457,7 +519,7 @@ function paintCellSubs() {
 function measureStrip() {
   const mobile = innerWidth < 861;
   const gap = mobile ? 8 : 10;
-  const headH = mobile ? 30 : 36;      // the month label sits above the rows
+  const headH = (mobile ? 30 : 36) + (state.group === 'place' ? (mobile ? 24 : 28) : 0);
   let cellH, cellW;
 
   // Two rows everywhere. A hero is four times the area of a normal cell, which
@@ -480,15 +542,6 @@ function measureStrip() {
 
 /* ── the scrubber: a colour ribbon of the whole year ─────── */
 function buildScrub() {
-  const frag = document.createDocumentFragment();
-  for (const i of [...W.keys()].reverse()) {      // oldest at the left, like the strip
-    const b = document.createElement('i');
-    b.style.background = W[i].accent;
-    b.dataset.i = i;
-    frag.appendChild(b);
-  }
-  el.scrubBars.appendChild(frag);
-
   const seek = clientX => {
     const r = el.scrub.getBoundingClientRect();
     const p = clamp((clientX - r.left) / r.width, 0, 1);
@@ -1053,8 +1106,12 @@ function boot() {
 
   buildRail();
   buildYear();
-  buildStrip();
+  renderStrip();
   buildScrub();
+  $('#modes').addEventListener('click', e => {
+    const b = e.target.closest('.mode');
+    if (b) setGroup(b.dataset.mode);
+  });
   buildFilters();
   updatePackLabel();
   measure();
