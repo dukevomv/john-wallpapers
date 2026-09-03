@@ -76,12 +76,16 @@ coordinates themselves never reach the website.
 - **Download** — the full frame, native resolution.
 - **Lock preview** — a live clock and date over the photo, to check it doesn't
   swallow them.
-- **Share** — on a phone this hands the *actual image* to the native share sheet
-  (Web Share Level 2), centre-cropped to that exact screen
-  (`screen.width × devicePixelRatio`) on the way out, so it's one tap to Save
-  Image and it already fits. Elsewhere it shares the link. No browser can set a
-  wallpaper directly — that API doesn't exist on iOS or Android — so after
-  saving, the site tells the visitor the two remaining steps for their platform.
+- **Share** — on a phone this hands the native share sheet the *full photograph*,
+  uncropped, together with its link, so the target can take whichever it wants:
+  Save Image, or a URL into a message. Elsewhere it shares the link. Nothing is
+  cropped on the way out — the phone crops against the real screen when the
+  wallpaper is set, and it does that better than a canvas can. No browser can
+  set a wallpaper directly (that API exists on neither iOS nor Android), so
+  after saving, the site names the two remaining steps.
+
+Every frame has a permalink — `#/w/2026-06-24-082111` — and opening one goes
+straight to that photograph.
 
 **Timeline** — reached by the accent-filled button in the header. One long
 horizontal strip you flick or drag through, in one of two groupings:
@@ -158,7 +162,10 @@ const SITE = {
 };
 ```
 
-- `api` empty ⇒ download counts are hidden rather than faked.
+- `api` empty ⇒ the download counts on show are the **placeholder** numbers
+  baked into `w/index.js` by `build.py`. They're derived from each photo's id so
+  they hold still across rebuilds — but they are invented. Deploy the Worker and
+  set `api`, and real counts replace them.
 - `api` and `email` both empty ⇒ the "New drops" button hides itself.
 
 Also worth editing in `index.html`: the `<title>`, the meta description, the
