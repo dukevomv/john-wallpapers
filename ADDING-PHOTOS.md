@@ -92,9 +92,16 @@ date comes from EXIF `DateTimeOriginal` instead, so the frame keeps its id, its
 permalink and its place on the timeline. A photo with neither is skipped and
 reported — that's the only way to lose one.
 
-A filename title beats `titles.json`. The caption still comes from
-`titles.json`, matched on the id, so renaming a file to name it does **not**
-lose the alt text it already had.
+Precedence, highest first:
+
+1. a `titles.json` entry keyed by **this exact filename** — a deliberate
+   correction, and the way to write something a filename can't hold (an
+   apostrophe, or a spelling the file gets wrong)
+2. the title derived from the filename
+3. whatever the id already had
+
+Captions always fall back by id, so renaming a file to name it never loses the
+alt text it already had.
 
 ## 4. Titles and captions by hand
 

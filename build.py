@@ -280,8 +280,13 @@ def main():
             built += 1
             print(f'  built  {slug}')
 
-        meta = titles.get(filename) or titles_by_slug.get(slug) or {}
-        from_name = title_in_filename(filename)     # a renamed file wins
+        # Precedence: an entry keyed by this exact filename is a deliberate
+        # correction and wins; otherwise the filename names it; otherwise
+        # whatever the id already had. Captions always fall back by id, so a
+        # rename never loses the alt text.
+        exact = titles.get(filename) or {}
+        prior = titles_by_slug.get(slug) or {}
+        from_name = title_in_filename(filename)
         where = place_of(coords, filename, places)
         entry = {
             'id': slug, 'src': filename, 'w': width, 'h': height,
@@ -290,8 +295,8 @@ def main():
             'orient': 'portrait' if height >= width else 'landscape',
             'ratio': round(width / height, 4),
             'mb': round(os.path.getsize(full) / 1048576, 2),
-            'title': from_name or meta.get('title') or slug,
-            'caption': meta.get('caption') or '',
+            'title': exact.get('title') or from_name or prior.get('title') or slug,
+            'caption': exact.get('caption') or prior.get('caption') or '',
             'place': meta.get('place') or where.get('label', ''),
             'city': where.get('city', ''),
             'country': where.get('country', ''),
