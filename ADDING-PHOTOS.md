@@ -11,8 +11,13 @@ python3 build.py Photos-2027     # any folder of jpg/png
 python3 build.py --force         # re-encode everything from scratch
 ```
 
-Photos already built are skipped, so re-running is cheap. The script prints
-exactly what is still missing at the end — treat that list as the to-do.
+Photos already built are skipped, so re-running is cheap — but **replacing a
+photograph in place rebuilds it**, because the check is on modification time,
+not just on whether the output exists. Swap a file for a better edit of the
+same frame and the next build picks it up, palette and all.
+
+The script prints exactly what is still missing at the end — treat that list as
+the to-do.
 
 ---
 

@@ -225,6 +225,11 @@ def placeholder_downloads(slug):
     return 10 + h % 90
 
 
+def meta_title(filename):
+    """Just for the build log, so a rebuild says which photograph moved."""
+    return title_in_filename(filename) or filename
+
+
 def lqip(im):
     """A 20px blur, inlined as a data URI, so nothing ever pops in blank."""
     t = im.copy(); t.thumbnail((20, 20))
@@ -280,14 +285,22 @@ def main():
         im = source.convert('RGB')
         width, height = im.size
 
-        if FORCE or not (os.path.exists(full) and os.path.exists(view) and os.path.exists(thumb)):
+        # Rebuild when anything is missing, and also when the source has been
+        # edited since — checking only for existence meant replacing a
+        # photograph in place left the old one on the site.
+        outputs = (full, view, thumb)
+        src_path = os.path.join(SRC, filename)
+        missing = not all(os.path.exists(o) for o in outputs)
+        edited = (not missing and
+                  any(os.path.getmtime(src_path) > os.path.getmtime(o) for o in outputs))
+        if FORCE or missing or edited:
             im.save(full, 'JPEG', quality=88, optimize=True, progressive=True, subsampling=1)
             v = im.copy(); v.thumbnail(VIEW_MAX, Image.LANCZOS)
             v.save(view, 'WEBP', quality=80, method=5)
             t = im.copy(); t.thumbnail(THUMB_MAX, Image.LANCZOS)
             t.save(thumb, 'WEBP', quality=72, method=5)
             built += 1
-            print(f'  built  {slug}')
+            print(f"  {'rebuilt' if edited else 'built  '}  {slug}  {meta_title(filename)}")
 
         # Precedence: an entry keyed by this exact filename is a deliberate
         # correction and wins; otherwise the filename names it; otherwise
