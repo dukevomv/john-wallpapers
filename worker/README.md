@@ -1,53 +1,68 @@
 # wallpapers-api
 
-Download counts and the new-drops mailing list. Two tables in Cloudflare D1,
-one Worker in front of them. Free tier covers this many times over.
+Download counts and the new-drops mailing list, on Workers KV.
 
-## Deploy
+**Deployed and live:** `https://wallpapers-api.dukevomv.workers.dev`
+(wired into `site/app.js` as `SITE.api`.)
 
-```sh
-npm install -g wrangler
-wrangler login
+## Endpoints
 
-cd worker
-wrangler d1 create wallpapers          # copy the database_id it prints
-#   -> paste it into wrangler.toml
-
-wrangler d1 execute wallpapers --remote --file=schema.sql
-wrangler deploy                        # prints https://wallpapers-api.<you>.workers.dev
+```
+GET  /counts       -> { "2026-06-24-082111": 128, ... }
+POST /count        { id }    -> { id, count }
+POST /subscribe    { email } -> { ok: true }
 ```
 
-Then put that URL into `site/app.js`:
+Only `https://john-wallpapers.pages.dev` may call it (`ALLOW_ORIGIN`).
+Ids and email addresses are validated before anything is written.
 
-```js
-const SITE = {
-  ...
-  api: 'https://wallpapers-api.<you>.workers.dev'
-};
-```
+## Storage
 
-Counts appear on the site immediately. With `api` left empty the site simply
-hides the numbers and the signup falls back to a mail link — nothing breaks.
+Workers KV, namespace `wallpapers`, one key per record:
 
-Once the site is live, uncomment `ALLOW_ORIGIN` in `wrangler.toml`, set it to
-your site's origin, and `wrangler deploy` again so only your page can post to it.
+- `c:<wallpaper-id>` — the download tally for that frame
+- `s:<email>` — a subscriber, value is the ISO date they joined
 
-## Reading the mailing list
+KV is eventually consistent: a fresh increment can take up to a minute to show
+up in `/counts` everywhere. The site increments optimistically on the client, so
+the person who just downloaded sees their own number move immediately.
+
+Counts started from zero on the day the Worker went up. They are real, not
+seeded — the `downloads` numbers in `w/index.js` are only a stand-in used when
+no API is configured.
+
+## Redeploying after changing index.js
 
 ```sh
-wrangler d1 execute wallpapers --remote \
-  --command "SELECT email, created FROM subscribers ORDER BY created DESC"
+source ~/.zshrc     # CF_API_TOKEN, CF_ACCOUNT_ID
+
+cat > /tmp/metadata.json <<EOF
+{ "main_module": "index.js",
+  "compatibility_date": "2025-01-01",
+  "bindings": [
+    { "type": "kv_namespace", "name": "KV", "namespace_id": "7643a77b423546989beb008fd55dc69f" },
+    { "type": "plain_text", "name": "ALLOW_ORIGIN", "text": "https://john-wallpapers.pages.dev" }
+  ] }
+EOF
+
+curl -X PUT "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/workers/scripts/wallpapers-api" \
+  -H "Authorization: Bearer $CF_API_TOKEN" \
+  -F "metadata=@/tmp/metadata.json;type=application/json" \
+  -F "index.js=@index.js;type=application/javascript+module"
+```
+
+`wrangler deploy` works too if you'd rather (`npm i -g wrangler`); `wrangler.toml`
+is already pointed at the right namespace.
+
+## Reading the data
+
+```sh
+# every subscriber
+curl "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT_ID/storage/kv/namespaces/7643a77b423546989beb008fd55dc69f/keys?prefix=s:" \
+  -H "Authorization: Bearer $CF_API_TOKEN"
 
 # most downloaded
-wrangler d1 execute wallpapers --remote \
-  --command "SELECT id, n FROM downloads ORDER BY n DESC LIMIT 20"
-```
-
-Export the list to CSV when you want to actually send something:
-
-```sh
-wrangler d1 execute wallpapers --remote --json \
-  --command "SELECT email FROM subscribers" > subscribers.json
+curl -s https://wallpapers-api.dukevomv.workers.dev/counts | python3 -m json.tool
 ```
 
 ## Notes
@@ -55,7 +70,7 @@ wrangler d1 execute wallpapers --remote --json \
 - The count endpoint is deliberately dumb: one POST, one increment. Someone
   determined could inflate a number. That's the right trade for a wallpaper
   site — the alternative is fingerprinting your visitors.
-- Emails are stored lowercased, one row each, nothing else. If you'd rather a
-  real mailing service handle consent and unsubscribes, point `api` at
-  Buttondown or Mailchimp's endpoint instead; the site only needs a URL that
-  accepts `POST {email}`.
+- Emails are stored lowercased, one key each, nothing else. If you'd rather a
+  real mailing service handle consent and unsubscribes, point `SITE.api` at
+  Buttondown or Mailchimp instead; the site only needs a URL accepting
+  `POST {email}`.

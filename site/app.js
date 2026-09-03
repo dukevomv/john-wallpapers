@@ -13,7 +13,7 @@ const SITE = {
   author: 'John Doe',
   handle: '@john_doe_on_earth',
   link  : 'https://instagram.com/john_doe_on_earth',
-  api   : '',
+  api   : 'https://wallpapers-api.dukevomv.workers.dev',
   email : ''
 };
 
@@ -59,7 +59,9 @@ const state = {
   stripScroll: null,        // null = never opened; start at 'now'
   group: 'month',           // 'month' | 'place'
   rows: 2, heroes: true,
-  counts: Object.fromEntries(W.map(x => [x.id, x.downloads || 0]))
+  // With an API configured these are the real counts and nothing else. The
+  // baked-in `downloads` are only a stand-in for previewing without a backend.
+  counts: SITE.api ? {} : Object.fromEntries(W.map(x => [x.id, x.downloads || 0]))
 };
 
 const path = {
@@ -83,7 +85,7 @@ function measure() {
     w = h * ratio;
     const maxW = vw * 0.66;
     if (w > maxW) { w = maxW; h = w / ratio; }
-    gap = Math.max(28, w * 0.14);
+    gap = Math.max(18, w * 0.07);
     radius = 22;
   }
   // step = how far a finger travels to advance one photo. On mobile the frames
@@ -157,9 +159,9 @@ function layout() {
       opacity = clamp(1 - ad * 1.08, 0, 1);
     } else {
       x = d * (w + gap);
-      scale = 1 - Math.min(ad, 3) * 0.11;
-      opacity = clamp(1 - ad * 0.42, 0, 1);
-      filter = ad < 0.004 ? '' : 'brightness(.55) saturate(.75)';
+      scale = 1 - Math.min(ad, 3) * 0.09;
+      opacity = clamp(1 - ad * 0.6, 0, 1);
+      filter = ad < 0.004 ? '' : 'brightness(.72) saturate(.85)';
     }
 
     node.style.setProperty('--sw', sz.w + 'px');
@@ -818,7 +820,7 @@ async function loadCounts() {
   try {
     const res = await fetch(SITE.api.replace(/\/$/, '') + '/counts');
     if (!res.ok) return;
-    Object.assign(state.counts, await res.json());   // live numbers win
+    state.counts = await res.json();
     render(W[state.index]);
     paintCellSubs();
   } catch { /* counts are a nicety, never a blocker */ }
@@ -866,7 +868,6 @@ async function joinList(email) {
 
 (function aboutPanel() {
   const toggle = $('#infoToggle'), panel = $('#info');
-  $('.info-name').textContent = SITE.author;
   const ig = $('#infoIg');
   if (SITE.link && SITE.handle) {
     ig.href = SITE.link;

@@ -5,8 +5,10 @@
  *   POST /count         { id }     -> { id, count }
  *   POST /subscribe     { email }  -> { ok: true }
  *
- * Backed by D1, so the increment is a single atomic UPSERT — no lost counts
- * when several people download at once.
+ * Backed by Workers KV, one key per wallpaper. KV is eventually consistent, so
+ * a freshly incremented number can take a moment to show up everywhere — fine
+ * for a download tally, and it keeps the whole thing on the free tier with only
+ * a KV binding to configure.
  */
 
 const ID_RE    = /^[0-9a-z-]{4,64}$/;
@@ -35,7 +37,6 @@ async function body(request) {
 
 export default {
   async fetch(request, env) {
-    // ALLOW_ORIGIN should be your site's origin once you know it.
     const origin = env.ALLOW_ORIGIN || '*';
     const { pathname } = new URL(request.url);
 
@@ -43,9 +44,17 @@ export default {
 
     try {
       if (request.method === 'GET' && pathname === '/counts') {
-        const { results } = await env.DB.prepare('SELECT id, n FROM downloads').all();
         const counts = {};
-        for (const row of results) counts[row.id] = row.n;
+        let cursor;
+        do {
+          const page = await env.KV.list({ prefix: 'c:', cursor });
+          const rows = await Promise.all(page.keys.map(async k => {
+            const v = await env.KV.get(k.name);
+            return [k.name.slice(2), Number(v) || 0];
+          }));
+          for (const [id, n] of rows) if (n) counts[id] = n;
+          cursor = page.list_complete ? null : page.cursor;
+        } while (cursor);
         return json(counts, 200, origin);
       }
 
@@ -54,13 +63,10 @@ export default {
         if (typeof id !== 'string' || !ID_RE.test(id)) {
           return json({ error: 'bad id' }, 400, origin);
         }
-        const row = await env.DB
-          .prepare(`INSERT INTO downloads (id, n) VALUES (?1, 1)
-                    ON CONFLICT(id) DO UPDATE SET n = n + 1
-                    RETURNING n`)
-          .bind(id)
-          .first();
-        return json({ id, count: row.n }, 200, origin);
+        const key = 'c:' + id;
+        const next = (Number(await env.KV.get(key)) || 0) + 1;
+        await env.KV.put(key, String(next));
+        return json({ id, count: next }, 200, origin);
       }
 
       if (request.method === 'POST' && pathname === '/subscribe') {
@@ -68,16 +74,12 @@ export default {
         if (typeof email !== 'string' || email.length > 160 || !EMAIL_RE.test(email)) {
           return json({ error: 'bad email' }, 400, origin);
         }
-        await env.DB
-          .prepare(`INSERT INTO subscribers (email, created) VALUES (?1, ?2)
-                    ON CONFLICT(email) DO NOTHING`)
-          .bind(email.toLowerCase(), new Date().toISOString())
-          .run();
+        await env.KV.put('s:' + email.toLowerCase(), new Date().toISOString());
         return json({ ok: true }, 200, origin);
       }
 
       return json({ error: 'not found' }, 404, origin);
-    } catch (err) {
+    } catch {
       return json({ error: 'server error' }, 500, origin);
     }
   },

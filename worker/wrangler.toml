@@ -2,12 +2,10 @@ name = "wallpapers-api"
 main = "index.js"
 compatibility_date = "2025-01-01"
 
-# Lock this to your site's origin once it's deployed, e.g.
-# "https://wallpapers.pages.dev". Leave it off and any site may call the API.
-# [vars]
-# ALLOW_ORIGIN = "https://your-site.pages.dev"
+# Only this origin may call the API.
+[vars]
+ALLOW_ORIGIN = "https://john-wallpapers.pages.dev"
 
-[[d1_databases]]
-binding       = "DB"
-database_name = "wallpapers"
-database_id   = "PASTE_THE_ID_FROM_d1_create_HERE"
+[[kv_namespaces]]
+binding = "KV"
+id      = "7643a77b423546989beb008fd55dc69f"

@@ -157,10 +157,10 @@ const SITE = {
 };
 ```
 
-- `api` empty ⇒ the download counts on show are the **placeholder** numbers
-  baked into `w/index.js` by `build.py`. They're derived from each photo's id so
-  they hold still across rebuilds — but they are invented. Deploy the Worker and
-  set `api`, and real counts replace them.
+- `api` is live at `https://wallpapers-api.dukevomv.workers.dev`, so the counts
+  on the site are **real**. They started from zero the day it went up. The
+  `downloads` numbers baked into `w/index.js` are only a stand-in for previewing
+  with no API configured — set `api` to `''` and you get those instead.
 - `api` and `email` both empty ⇒ the "New drops" button hides itself.
 
 Also worth editing in `index.html`: the `<title>`, the meta description, the
@@ -172,5 +172,6 @@ gallery intro paragraph, and the footer licence line (currently personal use).
 full-resolution downloads; browsing only ever fetches the ~21 MB of `view/` and
 `thumb/`.
 
-For counts and the mailing list, deploy `worker/` too — see `worker/README.md`.
-It's a Cloudflare Worker plus a D1 database, about five commands, free tier.
+`worker/` is deployed and live — a Cloudflare Worker on Workers KV, counting
+downloads and holding the mailing list. See `worker/README.md` for the endpoints
+and how to redeploy it.
