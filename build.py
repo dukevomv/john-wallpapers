@@ -155,12 +155,10 @@ def family(thumb_path):
 
 
 def placeholder_downloads(slug):
+    """Two-digit stand-ins until the Worker is counting for real. Derived from
+    the id so they hold still across rebuilds instead of jumping each time."""
     h = int(hashlib.sha1(slug.encode()).hexdigest()[:8], 16)
-    # a long tail: most frames modest, a few clear favourites
-    base = 40 + h % 260
-    if h % 7 == 0:
-        base += 300 + h % 500
-    return base
+    return 10 + h % 90
 
 
 def lqip(im):

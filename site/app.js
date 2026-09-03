@@ -1063,10 +1063,6 @@ addEventListener('keydown', e => {
 
 /* ── boot ────────────────────────────────────────────────── */
 function boot() {
-  // On a phone that can share files, this button saves the photo rather than a link
-  if ((IS_IOS || IS_ANDROID) && navigator.canShare) {
-    $('[data-act="share"] span').textContent = 'Save to phone';
-  }
   $('#footAuthor').textContent = SITE.author;
   $('.foot-legal-name').textContent = SITE.author;
 

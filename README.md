@@ -117,40 +117,29 @@ controls back.
 
 ## Adding photographs
 
-Drop new files into the folder and run:
-
 ```sh
-python3 build.py                      # defaults to Photos-1-001
-python3 build.py Photos-2027          # any folder of jpg/png
-python3 build.py --force              # re-encode everything from scratch
+python3 build.py                 # defaults to Photos-1-001/
+python3 build.py Photos-2027     # any folder of jpg/png
+python3 build.py --force         # re-encode everything from scratch
 ```
 
-It skips photos already built, so re-running is cheap, and it prints exactly
-what's still missing. Filenames shaped like `IMG20260624082111.jpg` give the
-date and time for free, and everything is sorted newest first.
+Everything the site shows is derived at build time, so new photographs inherit
+all of it — palettes, colour families, placeholders, timeline grouping — as long
+as they arrive in a shape the parser can read. Three things it needs from you:
 
-New photos come out titled with their filename. Add real ones to `titles.json`:
+1. **The filename carries the date.** `IMG<YYYYMMDD><HHMMSS>.jpg`, which is what
+   phones already produce. It's the only source of date, id, permalink, month
+   and sort order.
+2. **GPS decides the location**, matched against `places.json`. A photo from
+   somewhere new is reported with no location — add a row (label, city, country,
+   lat, lon, radiusKm) and re-run. No GPS at all goes in the `manual` block.
+3. **Titles and captions** live in `titles.json`. The caption isn't printed —
+   it's the image's alt text.
 
-```json
-"IMG20260624082111.jpg": {
-  "title": "Foam",
-  "caption": "Aerial turquoise, churned white where it breaks."
-}
-```
+`build.py` prints exactly what's still missing after every run.
 
-Captions aren't printed on the page — they're the images' alt text, which is
-what a screen reader reads out, so they're worth writing.
-
-**Locations** are matched automatically from GPS against the list in
-`places.json`. If a new photo lands somewhere new, `build.py` reports it with no
-location; add a row (label, city, country, lat, lon, radius in km) and re-run.
-`city` and `country` are what the "By place" timeline groups on — they're stored
-explicitly because a country can't be parsed off a label ("Chania, Crete" is in
-Greece). Photos with no
-GPS at all go in the `manual` block, keyed by filename.
-
-The four January frames carry no GPS at all; they're set to Haarlem by hand in
-`places.json` → `manual`, on the photographer's word rather than from a file.
+**→ [ADDING-PHOTOS.md](ADDING-PHOTOS.md) is the full contract**, including what
+the build derives, why output images carry no EXIF, and what not to hand-write.
 
 Requires Pillow (`pip3 install pillow`). Nothing else.
 

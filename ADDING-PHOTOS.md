@@ -1,0 +1,120 @@
+# Adding photographs
+
+Everything the site knows about a photograph is derived at build time by
+`build.py`. Nothing is written by hand into the site itself, so a new photo
+picks up all of it automatically — **provided it arrives in a shape the parser
+can read**. This is that shape.
+
+```sh
+python3 build.py                 # defaults to Photos-1-001/
+python3 build.py Photos-2027     # any folder of jpg/png
+python3 build.py --force         # re-encode everything from scratch
+```
+
+Photos already built are skipped, so re-running is cheap. The script prints
+exactly what is still missing at the end — treat that list as the to-do.
+
+---
+
+## 1. The filename carries the date
+
+```
+IMG20260624082111.jpg
+   └──┬───┘└──┬─┘
+   20260624  082111        →  2026-06-24, 08:21:11
+```
+
+`IMG<YYYYMMDD><HHMMSS>.<ext>` is the format phones already produce, and it is
+the **only** source of date. From it the build derives:
+
+- the frame's id (`2026-06-24-082111`) and therefore its permalink
+- the month, which is what the timeline groups on
+- the sort order — the whole set runs newest first
+
+A file that doesn't match still builds, but it gets a slug from its bare name,
+**no month, and no place on the timeline**. If you rename files, keep this
+pattern.
+
+## 2. GPS decides the location
+
+Location comes from the photo's own EXIF GPS, matched against `places.json`.
+Nothing is typed per-photo.
+
+```json
+{ "label": "Parga, Greece", "city": "Parga", "country": "Greece",
+  "lat": 39.2845, "lon": 20.4030, "radiusKm": 8 }
+```
+
+- `label` is the line shown under the title.
+- `city` and `country` are what the **By place** timeline groups on. They're
+  stored explicitly because a country can't be parsed off a label — "Chania,
+  **Crete**" is in Greece.
+- `radiusKm` is how far from that point a photo still counts as being there.
+
+**When a photo lands somewhere new**, the build reports it with no location.
+Add a row and re-run. Keep labels at city/area level: the coordinates
+themselves are never published, and that's deliberate.
+
+**A photo with no GPS at all** goes in the `manual` block, keyed by filename:
+
+```json
+"manual": { "IMG20260111161443.jpg": "Haarlem, Netherlands" }
+```
+
+The value must match an existing `label` so city and country come along with it.
+
+## 3. Titles and captions are the one hand-written part
+
+`titles.json`, keyed by the original filename:
+
+```json
+"IMG20260624082111.jpg": {
+  "title": "Foam",
+  "caption": "Aerial turquoise, churned white where it breaks."
+}
+```
+
+A photo with no entry is titled with its slug — it builds, it just reads badly.
+The **caption is never printed on the page**; it's the image's `alt` text, which
+is what a screen reader announces. Write it as a description of the photograph,
+not as marketing.
+
+## 4. Everything else is derived — don't hand-write it
+
+For each photo the build produces, into `site/w/index.js`:
+
+| field | how it's derived |
+|---|---|
+| three image sizes | full (native, re-encoded), view (≤1080×1920 webp), thumb (≤360px webp) |
+| `accent` `deep` `deep2` `soft` `glow` `ink` `muted` | quantise the frame, score colours by saturation × presence × mid-tone, then build the palette the whole page animates to |
+| `family` | blue / teal / amber / rust / stone, judged across the whole frame, not the accent |
+| `swatches` | the five most present colours |
+| `lqip` | a 20px blur inlined as a data URI, so nothing pops in blank |
+| `ratio` `w` `h` `mb` | measured off the encoded file |
+| `series` | the month block it belongs to |
+| `downloads` | a two-digit placeholder derived from the id (see below) |
+
+## 5. What the build guarantees
+
+- **Output images carry no EXIF.** Pillow re-encodes without metadata, so none
+  of the GPS that produced "Parga, Greece" is downloadable from the site. This
+  is a property of going through `build.py` — a file copied into `site/w/full/`
+  by hand would keep its coordinates.
+- **Originals are never modified**, and `Photos-*/` is gitignored. They are the
+  only copies that still hold GPS.
+- **Ids are stable**, so permalinks and download counts survive a rebuild.
+
+## 6. Shape of the photographs
+
+Portrait 9:16 is the target — they're phone wallpapers. Landscape frames build
+fine and appear throughout, but they're cropped to portrait in the viewer, the
+same way a phone would crop them.
+
+## 7. After a rebuild
+
+`build.py` rewrites `site/w/index.js` only. Commit that alongside the new files
+in `site/w/`, push, and the deploy runs itself.
+
+The `downloads` numbers are **invented placeholders** — stable across rebuilds,
+but not real. Deploy `worker/` and set `api` in `site/app.js` and genuine counts
+replace them everywhere they appear.
