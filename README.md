@@ -161,7 +161,9 @@ const SITE = {
   on the site are **real**. They started from zero the day it went up. The
   `downloads` numbers baked into `w/index.js` are only a stand-in for previewing
   with no API configured — set `api` to `''` and you get those instead.
-- `api` and `email` both empty ⇒ the "New drops" button hides itself.
+- There is no email signup in the UI any more; the footer carries the Instagram
+  link instead. The Worker still exposes `POST /subscribe`, so the form can come
+  back whenever it's wanted.
 
 Also worth editing in `index.html`: the `<title>`, the meta description, the
 gallery intro paragraph, and the footer licence line (currently personal use).
@@ -173,5 +175,5 @@ full-resolution downloads; browsing only ever fetches the ~21 MB of `view/` and
 `thumb/`.
 
 `worker/` is deployed and live — a Cloudflare Worker on Workers KV, counting
-downloads and holding the mailing list. See `worker/README.md` for the endpoints
+downloads (and able to hold a mailing list, though the site no longer collects). See `worker/README.md` for the endpoints
 and how to redeploy it.

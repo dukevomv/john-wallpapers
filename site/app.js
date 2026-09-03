@@ -42,7 +42,7 @@ const el = {
   strip: $('#strip'), stripTrack: $('#stripTrack'),
   scrub: $('#scrub'), scrubBars: $('#scrubBars'), scrubWindow: $('#scrubWindow'),
   packBtn: $('#packBtn'), packLabel: $('#packLabel'),
-  toast: $('#toast'), footNote: $('#footNote'),
+  toast: $('#toast'),
   blurA: $('.field-blur[data-layer="a"]'), blurB: $('.field-blur[data-layer="b"]'),
   themeMeta: $('meta[name="theme-color"]'),
   lockTime: $('#lockTime'), lockDate: $('#lockDate')
@@ -849,25 +849,7 @@ async function bumpCount(id, { silent = false } = {}) {
   } catch { /* keep the optimistic number */ }
 }
 
-/* ── the mailing list: header panel and footer line share one path ──────── */
-const EMAIL_RE = /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)+$/;
-const listIsLive = () => Boolean(SITE.api || SITE.email);
-
-async function joinList(email) {
-  if (!SITE.api) {
-    location.href = `mailto:${SITE.email}?subject=${encodeURIComponent('New wallpaper drops')}` +
-      `&body=${encodeURIComponent('Please add ' + email + ' to the list.')}`;
-    return true;
-  }
-  const res = await fetch(SITE.api.replace(/\/$/, '') + '/subscribe', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email })
-  });
-  if (!res.ok) throw new Error('subscribe');
-  return true;
-}
-
+/* ── about panel ─────────────────────────────────────────── */
 (function aboutPanel() {
   const toggle = $('#infoToggle'), panel = $('#info');
   const ig = $('#infoIg');
@@ -887,42 +869,6 @@ async function joinList(email) {
   });
   addEventListener('click', e => { if (!panel.hidden && !panel.contains(e.target)) close(); });
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-})();
-
-(function signupFooter() {
-  const form = $('#footJoin'), input = $('#footEmail'), note = el.footNote;
-  const button = form.querySelector('button');
-
-  if (!listIsLive()) {
-    // Shown, but honest about it — nothing here would reach anyone yet.
-    form.dataset.state = 'off';
-    input.disabled = button.disabled = true;
-    note.textContent = 'Opening soon.';
-    return;
-  }
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = input.value.trim();
-    note.className = 'foot-note';
-    if (!EMAIL_RE.test(email)) {
-      note.textContent = 'That address doesn\'t look right.';
-      note.classList.add('bad');
-      return;
-    }
-    form.classList.add('busy');
-    try {
-      await joinList(email);
-      input.value = '';
-      note.textContent = 'You\'re on the list.';
-      note.classList.add('good');
-    } catch {
-      note.textContent = 'That didn\'t go through. Try again in a moment?';
-      note.classList.add('bad');
-    } finally {
-      form.classList.remove('busy');
-    }
-  });
 })();
 
 /* ── wallpaper tools ─────────────────────────────────────── */
@@ -1067,6 +1013,11 @@ addEventListener('keydown', e => {
 /* ── boot ────────────────────────────────────────────────── */
 function boot() {
   $('#footAuthor').textContent = SITE.author;
+  const footIg = $('#footIg');
+  if (SITE.link && SITE.handle) {
+    footIg.href = SITE.link;
+    $('.foot-handle').textContent = SITE.handle;
+  } else footIg.hidden = true;
   $('.foot-legal-name').textContent = SITE.author;
 
   el.scrub.setAttribute('aria-valuemax', String(W.length));
