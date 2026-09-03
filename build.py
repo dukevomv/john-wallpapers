@@ -86,6 +86,9 @@ def title_in_filename(filename):
     m = re.match(r'IMG\d{14}(.*)$', stem)
     rest = m.group(1) if m else stem                 # no timestamp? the name IS the title
     rest = re.sub(r'^~\d+', '', rest)                # drop the re-export marker
+    # "1. this one i like" — a numbered ordering prefix, not part of the title.
+    # The period is what distinguishes it from a name like "1 up".
+    rest = re.sub(r'^\s*\d+\s*\.\s*', '', rest)
     rest = re.sub(r'[_\-.]+', ' ', rest).strip()
     if not re.search(r'[A-Za-z]', rest):
         return ''
