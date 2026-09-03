@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS downloads (
+  id TEXT PRIMARY KEY,
+  n  INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS subscribers (
+  email   TEXT PRIMARY KEY,
+  created TEXT NOT NULL
+);

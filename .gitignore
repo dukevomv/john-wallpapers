@@ -1,0 +1,8 @@
+# The original photographs — 265MB, and the only copy that still carries GPS.
+# build.py reads them locally; the site never needs them.
+Photos-1-001/
+*.orig.jpg
+
+.DS_Store
+node_modules/
+.wrangler/

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>2026 — Wallpapers</title>
+<meta name="description" content="A year of photographs, cut and colour-graded for your phone screen. Free to download and use.">
+<meta name="theme-color" content="#0b0b0d">
+<meta property="og:title" content="2026 — Wallpapers">
+<meta property="og:description" content="A year of photographs, sized for your phone. Free to download.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body class="is-loading" data-view="stage">
+
+<!-- ambient colour field -->
+<div class="field" aria-hidden="true">
+  <div class="field-blur" data-layer="a"></div>
+  <div class="field-blur" data-layer="b"></div>
+  <div class="field-wash"></div>
+  <div class="field-grain"></div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="#/" aria-label="Home">
+    <span class="brand-mark"></span>
+    <span class="brand-text"><b>2026</b><i>Wallpapers</i></span>
+  </a>
+
+  <div class="topbar-right">
+    <span class="counter" id="counter" aria-live="polite"></span>
+
+    <button class="chip-btn chip-mail" id="signupToggle" aria-expanded="false" aria-controls="signup">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="4" width="16" height="12" rx="2.4"/><path d="m2.8 5.5 7.2 5.2 7.2-5.2"/></svg>
+      <span class="chip-btn-label">New drops</span>
+    </button>
+
+    <button class="chip-btn chip-all" id="viewToggle" aria-label="Show all wallpapers">
+      <svg class="ic-grid" viewBox="0 0 20 20" aria-hidden="true">
+        <rect x="1.6" y="4.2" width="4.5" height="11.6" rx="1.5" opacity=".55"/>
+        <rect x="7.75" y="2.2" width="4.5" height="15.6" rx="1.5"/>
+        <rect x="13.9" y="4.2" width="4.5" height="11.6" rx="1.5" opacity=".55"/>
+      </svg>
+      <svg class="ic-single" viewBox="0 0 20 20" aria-hidden="true" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 4 6 10l6 6"/>
+      </svg>
+      <span class="chip-btn-label">All</span>
+    </button>
+  </div>
+
+  <!-- new-drops signup -->
+  <div class="signup" id="signup" hidden>
+    <form id="signupForm" novalidate>
+      <p class="signup-lead">New wallpapers land every few weeks. Want a note when they do?</p>
+      <div class="signup-row">
+        <input type="email" id="signupEmail" name="email" required autocomplete="email"
+               placeholder="you@example.com" aria-label="Your email address">
+        <button type="submit" class="signup-go">Join</button>
+      </div>
+      <p class="signup-fine" id="signupFine">Just the new sets. No forwarding, no selling, unsubscribe whenever.</p>
+    </form>
+  </div>
+</header>
+
+<!-- ───────────────────────── STAGE ───────────────────────── -->
+<main class="stage" id="stage">
+  <div class="viewport" id="viewport">
+    <div class="track" id="track"></div>
+    <div class="lockscreen" id="lockscreen" aria-hidden="true">
+      <div class="lock-time" id="lockTime">9:41</div>
+      <div class="lock-date" id="lockDate"></div>
+      <div class="lock-foot"><span></span></div>
+    </div>
+    <button class="arrow arrow-prev" id="prevBtn" aria-label="Previous wallpaper">
+      <svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8"/></svg>
+    </button>
+    <button class="arrow arrow-next" id="nextBtn" aria-label="Next wallpaper">
+      <svg viewBox="0 0 24 24"><path d="m9 4 8 8-8 8"/></svg>
+    </button>
+    <button class="immersive-exit" id="immersiveExit" aria-label="Show controls"></button>
+  </div>
+
+  <div class="chrome" id="chrome">
+    <div class="chrome-inner">
+      <div class="year" id="year" aria-label="Jump to a month of 2026"></div>
+
+      <div class="meta">
+        <div class="meta-swatches" id="swatches" aria-hidden="true"></div>
+        <h1 class="meta-title" id="title"></h1>
+        <div class="meta-line">
+          <p class="meta-place" id="place">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>
+            <span id="placeText"></span>
+          </p>
+          <p class="meta-specs" id="specs"></p>
+        </div>
+      </div>
+
+      <div class="tools" id="tools">
+        <button class="tool tool-primary" data-act="download">
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          <span>Download</span>
+        </button>
+        <button class="tool" data-act="lock" aria-pressed="false">
+          <svg viewBox="0 0 24 24"><rect x="4.5" y="10" width="15" height="10.5" rx="2.6"/><path d="M8.2 10V7.4a3.8 3.8 0 0 1 7.6 0V10"/></svg>
+          <span>Lock preview</span>
+        </button>
+        <button class="tool" data-act="share">
+          <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>
+          <span>Share</span>
+        </button>
+      </div>
+
+      <div class="rail-wrap">
+        <div class="rail" id="rail" aria-label="All wallpapers"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ───────────────────────── GALLERY ───────────────────────── -->
+<section class="gallery" id="gallery" hidden>
+  <div class="gallery-head">
+    <div class="gallery-intro">
+      <h2>Frames from 2026</h2>
+      <p>Winter in the Low Countries, rust and arches in Turin, blossom in April, a long
+         Greek summer. Shot in sequence, shown in sequence.</p>
+    </div>
+    <div class="gallery-controls">
+      <div class="filters" id="filters"></div>
+      <button class="pack" id="packBtn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M3 8.5 12 13l9-4.5M12 13v7"/></svg>
+        <span id="packLabel">Download the set</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="strip" id="strip">
+    <div class="strip-track" id="stripTrack"></div>
+  </div>
+
+  <div class="scrubwrap">
+    <div class="scrub" id="scrub" role="slider" tabindex="0"
+         aria-label="Scrub through the year" aria-valuemin="1" aria-valuenow="1">
+      <div class="scrub-bars" id="scrubBars"></div>
+      <div class="scrub-window" id="scrubWindow"></div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <p class="foot-sig">
+      <span class="foot-name" id="footAuthor"></span>
+      <svg class="foot-heart" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 20.6S3.6 14.9 3.6 9.4a4.7 4.7 0 0 1 8.4-2.9 4.7 4.7 0 0 1 8.4 2.9c0 5.5-8.4 11.2-8.4 11.2Z"/>
+      </svg>
+      <em class="foot-quote">Don't forget to create art.</em>
+    </p>
+
+    <form class="foot-join" id="footJoin" novalidate>
+      <label for="footEmail">Next month's photographs, in your inbox</label>
+      <div class="foot-join-row">
+        <input id="footEmail" type="email" inputmode="email" autocomplete="email"
+               placeholder="you@example.com" aria-label="Your email address">
+        <button type="submit" aria-label="Join the list">
+          <svg viewBox="0 0 24 24"><path d="M5 12h12m0 0-4.6-4.6M17 12l-4.6 4.6"/></svg>
+        </button>
+      </div>
+      <p class="foot-note" id="footNote"></p>
+    </form>
+
+    <p class="foot-legal">
+      © 2026 <span class="foot-legal-name"></span> · free to use as a wallpaper.
+      Please don't resell them or repost them as your own.
+    </p>
+  </footer>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="w/index.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

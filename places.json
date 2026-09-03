@@ -1,0 +1,90 @@
+{
+ "_comment": "Each photo's GPS is matched to the nearest place within radiusKm. Labels are city/area level on purpose — the exact coordinates never reach the website. Add a row for any new place; if nothing matches, the photo simply shows no location.",
+ "places": [
+  {
+   "label": "Turin, Italy",
+   "lat": 45.0794,
+   "lon": 7.6746,
+   "radiusKm": 12
+  },
+  {
+   "label": "Susa Valley, Italy",
+   "lat": 45.0228,
+   "lon": 6.8591,
+   "radiusKm": 25
+  },
+  {
+   "label": "Haarlem, Netherlands",
+   "lat": 52.3761,
+   "lon": 4.634,
+   "radiusKm": 9
+  },
+  {
+   "label": "Amsterdam, Netherlands",
+   "lat": 52.3762,
+   "lon": 4.8913,
+   "radiusKm": 9
+  },
+  {
+   "label": "Schiphol, Netherlands",
+   "lat": 52.3085,
+   "lon": 4.7624,
+   "radiusKm": 7
+  },
+  {
+   "label": "The Hague, Netherlands",
+   "lat": 52.0716,
+   "lon": 4.3672,
+   "radiusKm": 12
+  },
+  {
+   "label": "Epirus, Greece",
+   "lat": 39.501,
+   "lon": 20.18,
+   "radiusKm": 20
+  },
+  {
+   "label": "South Evia, Greece",
+   "lat": 38.0921,
+   "lon": 24.5779,
+   "radiusKm": 20
+  },
+  {
+   "label": "Athens, Greece",
+   "lat": 38.078,
+   "lon": 23.8556,
+   "radiusKm": 25
+  },
+  {
+   "label": "Chania, Crete",
+   "lat": 35.5166,
+   "lon": 24.0232,
+   "radiusKm": 15
+  },
+  {
+   "label": "Thessaloniki, Greece",
+   "lat": 40.6119,
+   "lon": 22.9515,
+   "radiusKm": 15
+  },
+  {
+   "label": "Parga, Greece",
+   "lat": 39.2845,
+   "lon": 20.403,
+   "radiusKm": 8
+  },
+  {
+   "label": "Preveza, Greece",
+   "lat": 38.955,
+   "lon": 20.753,
+   "radiusKm": 10
+  }
+ ],
+ "_manual": "Photos with no GPS at all. Fill in a label here and re-run build.py.",
+ "manual": {
+  "IMG20260111161443.jpg": "",
+  "IMG20260117152951.jpg": "",
+  "IMG20260117172216~2.jpg": "",
+  "IMG20260129105306.jpg": ""
+ }
+}

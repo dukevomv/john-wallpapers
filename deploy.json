@@ -1,0 +1,7 @@
+{
+  "project": "john-wallpapers",
+  "productionBranch": "main",
+  "branches": {
+    "main": {}
+  }
+}
