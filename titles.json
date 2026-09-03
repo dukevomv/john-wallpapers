@@ -15,49 +15,13 @@
   "title": "First Snow",
   "caption": "A footpath cutting through a forest dusted white."
  },
- "IMG20260207171717.jpg": {
-  "title": "Gable Row",
-  "caption": "Canal houses shoulder to shoulder under a warm break in the clouds."
- },
- "IMG20260225160400.jpg": {
-  "title": "Ridgelines",
-  "caption": "Mountain ridges fading into each other through haze."
- },
- "IMG20260225160407~2.jpg": {
-  "title": "Alpine Haze",
-  "caption": "Bare larch forest below a wall of soft grey peaks."
- },
- "IMG20260225160421.jpg": {
-  "title": "Timberline",
-  "caption": "Where the trees stop and the mountain keeps going."
- },
- "IMG20260301105905~2.jpg": {
-  "title": "Checker Corridor",
-  "caption": "A chequerboard floor running into total darkness."
- },
  "IMG20260301112014~2.jpg": {
   "title": "Grid Living",
   "caption": "A facade of windows, ochre panels and repetition."
  },
- "IMG20260301112958~2.jpg": {
-  "title": "River Flight",
-  "caption": "Gulls scattered above a slow winter river."
- },
- "IMG20260301113007~2.jpg": {
-  "title": "Two Wings",
-  "caption": "One gull holding the middle of an empty sky."
- },
  "IMG20260301113008.jpg": {
   "title": "Wingspan",
   "caption": "A pair crossing over the water at the same moment."
- },
- "IMG20260301121734.jpg": {
-  "title": "Portico",
-  "caption": "Under the arcades, a crowd moving toward the light."
- },
- "IMG20260304181057.jpg": {
-  "title": "Rust Arcade",
-  "caption": "Red steel and spray paint on an old industrial spine."
  },
  "IMG20260304181203.jpg": {
   "title": "Iron Colonnade",
@@ -70,10 +34,6 @@
  "IMG20260304181353.jpg": {
   "title": "Ivy Arch",
   "caption": "Rust and ivy sharing the same window."
- },
- "IMG20260304184218.jpg": {
-  "title": "Sodium Light",
-  "caption": "A yellow industrial column glowing into blue dusk."
  },
  "IMG20260306181512~2.jpg": {
   "title": "Canopy Web",
@@ -90,22 +50,6 @@
  "IMG20260407192708.jpg": {
   "title": "Wire Dusk",
   "caption": "Cables cutting the sunset into strips."
- },
- "IMG20260419120457.jpg": {
-  "title": "Blossom Lane",
-  "caption": "Magnolia spilling over a brick lane in April."
- },
- "IMG20260419120458.jpg": {
-  "title": "Petal Street",
-  "caption": "Pink blossom against dark brick and blue sky."
- },
- "IMG20260422181014.jpg": {
-  "title": "Spring Green",
-  "caption": "New leaves burning bright over a park lawn."
- },
- "IMG20260426172346.jpg": {
-  "title": "Waking Branches",
-  "caption": "Half-bare trees, blue sky, the season turning."
  },
  "IMG20260430180011.jpg": {
   "title": "Leaf Cathedral",
@@ -139,33 +83,9 @@
   "title": "Lattice Tower",
   "caption": "Red steel latticework climbing into the blue."
  },
- "IMG20260531150613.jpg": {
-  "title": "Dry Gorge",
-  "caption": "A lone tree in a bed of white stone below the cliffs."
- },
- "IMG20260531151543.jpg": {
-  "title": "Anchored",
-  "caption": "A small boat on turquoise, a beach of round stones."
- },
- "IMG20260531151548.jpg": {
-  "title": "Blue Line",
-  "caption": "The sea in three clean bands of colour."
- },
- "IMG20260531190922.jpg": {
-  "title": "Still Water",
-  "caption": "Flat sea, soft horizon, one boat waiting."
- },
  "IMG20260531195223.jpg": {
   "title": "Stone Skin",
   "caption": "Pale rock cracked into a map of itself."
- },
- "IMG20260531195226.jpg": {
-  "title": "Standing Ground",
-  "caption": "Boots on broken slate at the water's edge."
- },
- "IMG20260531195425.jpg": {
-  "title": "Slate",
-  "caption": "Grey stone stacked and split by the sea."
  },
  "IMG20260531195438.jpg": {
   "title": "Fracture",
@@ -191,10 +111,6 @@
   "title": "Gull & Foam",
   "caption": "One bird crossing the turquoise, seen from above."
  },
- "IMG20260624082114.jpg": {
-  "title": "Drifting",
-  "caption": "A gull suspended over moving water."
- },
  "IMG20260624082122.jpg": {
   "title": "Above the Break",
   "caption": "Looking down on the sea doing its work."
@@ -211,10 +127,6 @@
   "title": "Headland",
   "caption": "Green rock meeting deep blue."
  },
- "IMG20260712193458~2.jpg": {
-  "title": "Ochre Wall",
-  "caption": "Peeling plaster, red shutters, a Greek afternoon."
- },
  "IMG20260712205429.jpg": {
   "title": "Lighthouse",
   "caption": "A harbour light in silhouette against an orange sky."
@@ -227,14 +139,6 @@
   "title": "Night Grid",
   "caption": "A glass facade lit from inside, after dark."
  },
- "IMG20260829183824.jpg": {
-  "title": "Autumn Stoop",
-  "caption": "Pumpkins and geraniums on a doorstep in late summer."
- },
- "IMG20260625222903.jpg": {
-  "title": "Green Shutter",
-  "caption": "Whitewash and one teal shutter, found in the dark."
- },
  "IMG20260626003436.jpg": {
   "title": "Diamonds",
   "caption": "Paving stones cut into diamonds, with one small crossing."
@@ -242,5 +146,121 @@
  "IMG20260626100506.jpg": {
   "title": "The Lookout",
   "caption": "A bird holding the corner of a balcony against a hard blue sky."
+ },
+ "IMG20260117155609~2.jpg": {
+  "title": "Low Winter Sun",
+  "caption": "A gravel path curving off through bare trees, the sun caught low between them."
+ },
+ "IMG20260117192049.jpg": {
+  "title": "Spire at Night",
+  "caption": "The old spire floodlit against a black January sky."
+ },
+ "IMG20260207160059.jpg": {
+  "title": "Window Grid",
+  "caption": "A facade of square windows and pale tile, repeating up out of frame."
+ },
+ "IMG20260210155445.jpg": {
+  "title": "Branch & Tower",
+  "caption": "Bare branches drawn across a white tower on a colourless afternoon."
+ },
+ "IMG20260226111520~2.jpg": {
+  "title": "Larch Slope",
+  "caption": "Snow lying between bare larches, straight down a mountainside."
+ },
+ "IMG20260301110312~2.jpg": {
+  "title": "Gilded",
+  "caption": "A gilded figure standing over a green dome, winter light behind it."
+ },
+ "IMG20260304181128.jpg": {
+  "title": "Under the Arcade",
+  "caption": "Rust-red pillars and spray paint running the length of an old industrial hall."
+ },
+ "IMG20260304212156.jpg": {
+  "title": "Moon Over Tracks",
+  "caption": "Tram rails and street lamps running off into the night, a moon above them."
+ },
+ "IMG20260329180558.jpg": {
+  "title": "Branches, Blue",
+  "caption": "Bare branches spread wide over a bright spring sky."
+ },
+ "IMG20260329180606.jpg": {
+  "title": "Reaching",
+  "caption": "The same tree a moment later, reaching further into the blue."
+ },
+ "IMG20260405133252~2.jpg": {
+  "title": "One Cloud",
+  "caption": "A single cumulus climbing into a very deep blue."
+ },
+ "IMG20260405134255.jpg": {
+  "title": "Umbrellas",
+  "caption": "Glass umbrellas held up on poles against a moving sky."
+ },
+ "IMG20260405134410.jpg": {
+  "title": "Under Umbrellas",
+  "caption": "Looking up through the umbrella sculpture into the cloud behind it."
+ },
+ "IMG20260405134922~2.jpg": {
+  "title": "Outbound",
+  "caption": "A plane crossing high over the gulf, two ships waiting below it."
+ },
+ "IMG20260405141031~2.jpg": {
+  "title": "Regatta",
+  "caption": "Sails scattered across the gulf, a channel marker standing in front."
+ },
+ "IMG20260407190526.jpg": {
+  "title": "Above the City",
+  "caption": "Rock and scrub on a hilltop, the city hazy and flat below."
+ },
+ "IMG20260430194853.jpg": {
+  "title": "Green Tunnel",
+  "caption": "A path running under an avenue of beeches, everything in it green."
+ },
+ "IMG20260509170525.jpg": {
+  "title": "Vapour",
+  "caption": "One contrail drawn past one cloud, and nothing else."
+ },
+ "IMG20260530085102.jpg": {
+  "title": "New Leaves",
+  "caption": "Straight up into fresh leaves with the sky burning through them."
+ },
+ "IMG20260530123521.jpg": {
+  "title": "The Cove",
+  "caption": "A pale beach and turquoise shallows tucked in under dry cliffs."
+ },
+ "IMG20260531145157.jpg": {
+  "title": "Moored",
+  "caption": "A small boat holding still on flat blue, a beach of round stones in front."
+ },
+ "IMG20260531200604.jpg": {
+  "title": "Small Craft",
+  "caption": "One boat crossing deep water, seen from the cliff above it."
+ },
+ "IMG20260615233151.jpg": {
+  "title": "Night Crossing",
+  "caption": "The vehicle deck of a ferry, lit blue, somewhere in the middle of the night."
+ },
+ "IMG20260616081819.jpg": {
+  "title": "Wake",
+  "caption": "An orange lifeboat over churned water as the ship pulls away."
+ },
+ "IMG20260624082656.jpg": {
+  "title": "Channel Marker",
+  "caption": "A red marker sitting alone on a silver sea."
+ },
+ "IMG20260709201858.jpg": {
+  "title": "In Bloom",
+  "caption": "A wall of small pink flowers, close enough to lose the edges."
+ },
+ "IMG20260711210243~2.jpg": {
+  "title": "Two at Dusk",
+  "caption": "Two silhouettes on a ridge as the last of the orange goes out."
+ },
+ "IMG20260714141855.jpg": {
+  "title": "Clear Water",
+  "caption": "Green-blue shallows running out towards a dark headland."
+ },
+ "IMG20260803123016.jpg": {
+  "title": "Forest Ridge",
+  "caption": "A whole mountainside of trees under building cloud."
  }
 }

@@ -18,7 +18,7 @@ build.py         regenerates everything above from a folder of photos
 titles.json      titles and captions, keyed by original filename
 places.json      GPS → place-name lookup, plus manual entries for photos with no GPS
 worker/          optional API: download counts + new-drops signup
-Photos-1-001/    the originals (never modified, never deployed)
+Photos/    the originals (never modified, never deployed)
 ```
 
 ## Running it locally
@@ -118,7 +118,7 @@ controls back.
 ## Adding photographs
 
 ```sh
-python3 build.py                 # defaults to Photos-1-001/
+python3 build.py                 # defaults to Photos/
 python3 build.py Photos-2027     # any folder of jpg/png
 python3 build.py --force         # re-encode everything from scratch
 ```

@@ -22,12 +22,13 @@ import os, sys, io, json, base64, colorsys, re, math, hashlib
 from PIL import Image, ImageFilter
 
 ROOT   = os.path.dirname(os.path.abspath(__file__))
-SRC    = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('-') else os.path.join(ROOT, 'Photos-1-001')
+SRC    = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('-') else os.path.join(ROOT, 'Photos')
 OUT    = os.path.join(ROOT, 'site', 'w')
 FORCE  = '--force' in sys.argv
 TITLES = os.path.join(ROOT, 'titles.json')
 PLACES = os.path.join(ROOT, 'places.json')
 
+YEAR      = 2026          # the site is one year; anything else is skipped
 VIEW_MAX  = (1080, 1920)
 THUMB_MAX = (360, 360)
 MONTHS = ['', 'January', 'February', 'March', 'April', 'May', 'June',
@@ -176,14 +177,23 @@ def main():
         os.makedirs(os.path.join(OUT, sub), exist_ok=True)
 
     titles = json.load(open(TITLES)) if os.path.exists(TITLES) else {}
+    # A re-export can change the filename ("~2") without changing the moment,
+    # so fall back to matching on the derived id.
+    titles_by_slug = {}
+    for name, meta in titles.items():
+        titles_by_slug.setdefault(slug_of(name)[0], meta)
     places = json.load(open(PLACES)) if os.path.exists(PLACES) else {'places': [], 'manual': {}}
     files = sorted(f for f in os.listdir(SRC) if f.lower().endswith(('.jpg', '.jpeg', '.png')))
     if not files:
         sys.exit(f'No photographs in {SRC}')
 
+    skipped = []
     data, built = [], 0
     for filename in files:
         slug, date, month = slug_of(filename)
+        if not date.startswith(f'{YEAR}-'):
+            skipped.append(filename)
+            continue
         full  = os.path.join(OUT, 'full',  slug + '.jpg')
         view  = os.path.join(OUT, 'view',  slug + '.webp')
         thumb = os.path.join(OUT, 'thumb', slug + '.webp')
@@ -202,7 +212,7 @@ def main():
             built += 1
             print(f'  built  {slug}')
 
-        meta = titles.get(filename) or {}
+        meta = titles.get(filename) or titles_by_slug.get(slug) or {}
         where = place_of(coords, filename, places)
         entry = {
             'id': slug, 'src': filename, 'w': width, 'h': height,
@@ -227,6 +237,17 @@ def main():
         data.append(entry)
 
     data.sort(key=lambda x: x['id'], reverse=True)   # newest first
+
+    # Sweep generated files whose photograph is no longer in the source, so a
+    # removed frame can't linger in the deploy.
+    keep = {e['id'] for e in data}
+    removed = 0
+    for sub, ext in (('full', '.jpg'), ('view', '.webp'), ('thumb', '.webp')):
+        folder = os.path.join(OUT, sub)
+        for name in os.listdir(folder):
+            if name.endswith(ext) and name[:-len(ext)] not in keep:
+                os.remove(os.path.join(folder, name))
+                removed += 1
 
     # Grouped by month. Frames stay in the order they were shot, so a burst from
     # one afternoon still sits side by side — but the timeline reads in months,
@@ -261,7 +282,10 @@ def main():
         f.write('window.SERIES=' + json.dumps(series, separators=(',', ':')) + ';\n')
         f.write('window.PLACES=' + json.dumps(countries, separators=(',', ':')) + ';\n')
 
-    print(f'\n{len(data)} wallpapers · {len(series)} months · {len(countries)} countries · {built} newly built · index.js written')
+    print(f'\n{len(data)} wallpapers · {len(series)} months · {len(countries)} countries'
+          f' · {built} newly built · {removed} stale files swept · index.js written')
+    if skipped:
+        print(f'{len(skipped)} skipped — not from {YEAR}: ' + ', '.join(skipped[:6]))
 
     for label, key, where in (('title/caption', 'caption', 'titles.json'),
                               ('location', 'place', 'places.json ("manual")')):
