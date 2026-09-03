@@ -11,8 +11,8 @@
                           and the "New drops" button hides itself.                */
 const SITE = {
   author: 'John Doe',
-  handle: '',
-  link  : '',
+  handle: '@john_doe_on_earth',
+  link  : 'https://instagram.com/john_doe_on_earth',
   api   : '',
   email : ''
 };
@@ -54,7 +54,7 @@ const state = {
   geo: { w: 0, h: 0, gap: 0, step: 0, radius: 0, mobile: true },
   slides: new Map(),
   blurTop: 'a',
-  stripScroll: 0,
+  stripScroll: null,        // null = never opened; start at 'now'
   rows: 2, heroes: true,
   counts: null            // null until the API answers; {} means "none yet"
 };
@@ -380,26 +380,23 @@ function buildYear() {
 
 /* ── gallery: one long horizontal strip, split into the series
       they were shot in, so near-identical frames stay together ── */
-function shortDate(iso) {
-  if (!iso) return '';
-  const d = new Date(iso + 'T12:00:00');
-  return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
-}
-
 function buildStrip() {
   const frag = document.createDocumentFragment();
-  let group = null, cells = null, seriesIndex = -1;
+  let cells = null, seriesIndex = -1;
 
-  W.forEach((item, i) => {
+  // The data is newest-first for the viewer; a timeline has to read the other
+  // way, so walk it backwards. Series are contiguous, so they stay intact.
+  for (const i of [...W.keys()].reverse()) {
+    const item = W[i];
     if (item.series !== seriesIndex) {
       seriesIndex = item.series;
       const s = SERIES[seriesIndex];
-      group = document.createElement('div');
+      const group = document.createElement('div');
       group.className = 'grp';
       group.dataset.series = seriesIndex;
       const sep = document.createElement('div');
       sep.className = 'sep';
-      sep.innerHTML = `<b>${s.place || s.monthName}</b><em>${shortDate(s.date)} · ${s.ids.length}</em>`;
+      sep.innerHTML = `<b>${s.monthName}</b><em>${s.ids.length}</em>`;
       cells = document.createElement('div');
       cells.className = 'grp-cells';
       group.append(sep, cells);
@@ -410,7 +407,6 @@ function buildStrip() {
     c.className = 'cell';
     c.dataset.i = i;
     c.dataset.family = item.family;
-    c.dataset.series = item.series;
     c.setAttribute('aria-label', `Open ${item.title}`);
     c.innerHTML =
       `<img src="${item.lqip}" data-src="${path.thumb(item.id)}" alt="${item.title}">
@@ -418,7 +414,7 @@ function buildStrip() {
        <span class="cell-label"><b>${item.title}</b><span class="cell-sub"></span></span>`;
     c.addEventListener('click', () => openFromCell(c, i));
     cells.appendChild(c);
-  });
+  }
 
   el.stripTrack.appendChild(frag);
   measureStrip();
@@ -461,6 +457,7 @@ function paintCellSubs() {
 function measureStrip() {
   const mobile = innerWidth < 861;
   const gap = mobile ? 8 : 10;
+  const headH = mobile ? 30 : 36;      // the month label sits above the rows
   let cellH, cellW;
 
   // Two rows everywhere. A hero is four times the area of a normal cell, which
@@ -468,7 +465,7 @@ function measureStrip() {
   // frame keeps its size and simply centres across both rows instead.
   state.rows = 2;
   state.heroes = !mobile;
-  cellH = Math.max(90, Math.floor((el.strip.clientHeight - gap) / 2));
+  cellH = Math.max(80, Math.floor((el.strip.clientHeight - headH - gap) / 2));
   cellW = Math.round(cellH * 9 / 16);
   const maxW = Math.floor(el.strip.clientWidth / (mobile ? 3.2 : 4.2));
   if (cellW > maxW) { cellW = Math.max(64, maxW); cellH = Math.round(cellW * 16 / 9); }
@@ -484,12 +481,12 @@ function measureStrip() {
 /* ── the scrubber: a colour ribbon of the whole year ─────── */
 function buildScrub() {
   const frag = document.createDocumentFragment();
-  W.forEach((item, i) => {
+  for (const i of [...W.keys()].reverse()) {      // oldest at the left, like the strip
     const b = document.createElement('i');
-    b.style.background = item.accent;
+    b.style.background = W[i].accent;
     b.dataset.i = i;
     frag.appendChild(b);
-  });
+  }
   el.scrubBars.appendChild(frag);
 
   const seek = clientX => {
@@ -529,7 +526,7 @@ function updateScrubWindow() {
     const mid = el.strip.scrollLeft + el.strip.clientWidth / 2;
     const near = visible.reduce((best, c) =>
       Math.abs(c.offsetLeft - mid) < Math.abs(best.offsetLeft - mid) ? c : best, visible[0]);
-    el.scrub.setAttribute('aria-valuenow', String(+near.dataset.i + 1));
+    el.scrub.setAttribute('aria-valuenow', String(W.length - near.dataset.i));
   }
 }
 
@@ -713,11 +710,13 @@ function showGallery() {
   el.gallery.hidden = false;
   el.body.dataset.view = 'grid';
   el.body.classList.remove('immersive');
-  $('#viewToggle .chip-btn-label').textContent = 'Viewer';
-  $('#viewToggle').setAttribute('aria-label', 'Back to the viewer');
+  $('#viewToggle .chip-btn-label').textContent = 'Single';
+  $('#viewToggle').setAttribute('aria-label', 'Back to the single view');
   history.replaceState(null, '', '#/all');
   measureStrip();
-  el.strip.scrollLeft = state.stripScroll;
+  // the newest photographs live at the right-hand end
+  el.strip.scrollLeft = state.stripScroll ?? el.strip.scrollWidth;
+  updateScrubWindow();
 }
 
 function showStage() {
@@ -725,8 +724,8 @@ function showStage() {
   state.view = 'stage';
   el.body.dataset.view = 'stage';
   el.gallery.hidden = true;
-  $('#viewToggle .chip-btn-label').textContent = 'All';
-  $('#viewToggle').setAttribute('aria-label', 'Show all wallpapers');
+  $('#viewToggle .chip-btn-label').textContent = 'Timeline';
+  $('#viewToggle').setAttribute('aria-label', 'Show the timeline');
   measure(); layout();
   history.replaceState(null, '', `#/w/${W[state.index].id}`);
 }
@@ -810,10 +809,16 @@ async function joinList(email) {
   return true;
 }
 
-(function signupPanel() {
-  const toggle = $('#signupToggle'), panel = $('#signup');
-  const form = $('#signupForm'), input = $('#signupEmail'), fine = $('#signupFine');
-  if (!listIsLive()) { toggle.hidden = true; return; }
+(function aboutPanel() {
+  const toggle = $('#infoToggle'), panel = $('#info');
+  $('.info-name').textContent = SITE.author;
+  const ig = $('#infoIg');
+  if (SITE.link && SITE.handle) {
+    ig.href = SITE.link;
+    $('.info-handle').textContent = SITE.handle;
+  } else {
+    ig.hidden = true;
+  }
 
   const close = () => { panel.hidden = true; toggle.setAttribute('aria-expanded', 'false'); };
   toggle.addEventListener('click', e => {
@@ -821,31 +826,9 @@ async function joinList(email) {
     const open = panel.hidden;
     panel.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
-    if (open) setTimeout(() => input.focus(), 60);
   });
   addEventListener('click', e => { if (!panel.hidden && !panel.contains(e.target)) close(); });
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = input.value.trim();
-    if (!EMAIL_RE.test(email)) {
-      fine.textContent = 'That address doesn\'t look right.';
-      fine.classList.add('bad');
-      return;
-    }
-    form.classList.add('busy');
-    try {
-      await joinList(email);
-      form.innerHTML = '<p class="signup-done">You\'re on the list. See you at the next set.</p>';
-      setTimeout(close, 2200);
-    } catch {
-      fine.textContent = 'That didn\'t go through. Try again in a moment?';
-      fine.classList.add('bad');
-    } finally {
-      form.classList.remove('busy');
-    }
-  });
 })();
 
 (function signupFooter() {
@@ -1061,7 +1044,7 @@ function boot() {
     $('[data-act="share"] span').textContent = 'Save to phone';
   }
   $('#footAuthor').textContent = SITE.author;
-  $('.foot-legal-name').textContent = SITE.author + (SITE.handle ? ` (${SITE.handle})` : '');
+  $('.foot-legal-name').textContent = SITE.author;
 
   el.scrub.setAttribute('aria-valuemax', String(W.length));
   const headline = spell(W.length);

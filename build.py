@@ -204,14 +204,13 @@ def main():
 
     data.sort(key=lambda x: x['id'], reverse=True)   # newest first
 
-    # Frames from one place on one day belong together: shot as a series, shown
-    # as a series, so near-identical variants always sit side by side.
+    # Grouped by month. Frames stay in the order they were shot, so a burst from
+    # one afternoon still sits side by side — but the timeline reads in months,
+    # not days, and no exact date is ever published.
     series, current = [], None
     for entry in data:
-        key = (entry['place'], entry['date'])
-        if current is None or current['key'] != key:
-            current = {'key': key, 'place': entry['place'], 'date': entry['date'],
-                       'monthName': entry['monthName'], 'ids': []}
+        if current is None or current['month'] != entry['month']:
+            current = {'month': entry['month'], 'monthName': entry['monthName'], 'ids': []}
             series.append(current)
         current['ids'].append(entry['id'])
         entry['series'] = len(series) - 1

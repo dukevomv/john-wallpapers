@@ -83,13 +83,15 @@ coordinates themselves never reach the website.
   wallpaper directly — that API doesn't exist on iOS or Android — so after
   saving, the site tells the visitor the two remaining steps for their platform.
 
-**Gallery** — reached by the accent-filled button in the header. One long
-horizontal strip you flick or drag through, newest first, cut into the series
-the photos were shot in (same place, same day), so near-identical frames always
-sit together and in order. Vertical rules carry the place and date. Two
-rows; on a wide screen a series with an odd number of frames ends on a large
-card, which is what gives the strip its rhythm. Underneath, a colour ribbon of
-the whole year doubles as a scrubber — drag it to fly from January to August.
+**Timeline** — reached by the accent-filled button in the header. One long
+horizontal strip you flick or drag through, grouped by month and running
+oldest to newest, left to right, so it reads as a year. It opens scrolled to
+the right-hand end — at now. Frames stay in the order they were shot, so a burst
+from one afternoon still sits side by side. No exact dates are published
+anywhere; the month is as fine as it gets. Two rows, and on a wide screen a
+month with an odd number of frames ends on a large card, which is what gives the
+strip its rhythm. Underneath, a colour ribbon of the whole year doubles as a
+scrubber.
 
 Filter by colour family (blue, amber, rust, teal, stone), computed from the
 photographs rather than tagged by hand. **Download the set** zips whatever the
@@ -131,10 +133,8 @@ what a screen reader reads out, so they're worth writing.
 location; add a row (label, lat, lon, radius in km) and re-run. Photos with no
 GPS at all go in the `manual` block, keyed by filename.
 
-> Four January frames have no GPS: `IMG20260111161443`, `IMG20260117152951`,
-> `IMG20260117172216~2`, `IMG20260129105306`. They look like Haarlem to me —
-> the spire and the green dome match the GPS-tagged Haarlem set — but I haven't
-> asserted that. Fill in `places.json` → `manual` and re-run.
+The four January frames carry no GPS at all; they're set to Haarlem by hand in
+`places.json` → `manual`, on the photographer's word rather than from a file.
 
 Requires Pillow (`pip3 install pillow`). Nothing else.
 

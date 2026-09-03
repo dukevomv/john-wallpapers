@@ -32,12 +32,12 @@
   <div class="topbar-right">
     <span class="counter" id="counter" aria-live="polite"></span>
 
-    <button class="chip-btn chip-mail" id="signupToggle" aria-expanded="false" aria-controls="signup">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="4" width="16" height="12" rx="2.4"/><path d="m2.8 5.5 7.2 5.2 7.2-5.2"/></svg>
-      <span class="chip-btn-label">New drops</span>
+    <button class="chip-btn chip-info" id="infoToggle" aria-expanded="false" aria-controls="info">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.2"/><path d="M10 9.2v4.6"/><circle cx="10" cy="6.3" r="1.05"/></svg>
+      <span class="chip-btn-label">About</span>
     </button>
 
-    <button class="chip-btn chip-all" id="viewToggle" aria-label="Show all wallpapers">
+    <button class="chip-btn chip-all" id="viewToggle" aria-label="Show the timeline">
       <svg class="ic-grid" viewBox="0 0 20 20" aria-hidden="true">
         <rect x="1.6" y="4.2" width="4.5" height="11.6" rx="1.5" opacity=".55"/>
         <rect x="7.75" y="2.2" width="4.5" height="15.6" rx="1.5"/>
@@ -47,21 +47,27 @@
            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 4 6 10l6 6"/>
       </svg>
-      <span class="chip-btn-label">All</span>
+      <span class="chip-btn-label">Timeline</span>
     </button>
   </div>
 
-  <!-- new-drops signup -->
-  <div class="signup" id="signup" hidden>
-    <form id="signupForm" novalidate>
-      <p class="signup-lead">New wallpapers land every few weeks. Want a note when they do?</p>
-      <div class="signup-row">
-        <input type="email" id="signupEmail" name="email" required autocomplete="email"
-               placeholder="you@example.com" aria-label="Your email address">
-        <button type="submit" class="signup-go">Join</button>
-      </div>
-      <p class="signup-fine" id="signupFine">Just the new sets. No forwarding, no selling, unsubscribe whenever.</p>
-    </form>
+  <!-- about -->
+  <div class="info" id="info" hidden>
+    <p class="info-lead">
+      Photographs by <b class="info-name"></b>, taken through 2026 and cut to fit a phone screen.
+    </p>
+    <p class="info-free">
+      All of them are free to use as a wallpaper — take as many as you like, no attribution needed.
+      Please just don't resell them or repost them as your own.
+    </p>
+    <a class="info-ig" id="infoIg" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5.2"/>
+        <circle cx="12" cy="12" r="4.1"/>
+        <circle cx="17.4" cy="6.6" r="1.15" fill="currentColor" stroke="none"/>
+      </svg>
+      <span class="info-handle"></span>
+    </a>
   </div>
 </header>
 
@@ -144,7 +150,7 @@
 
   <div class="scrubwrap">
     <div class="scrub" id="scrub" role="slider" tabindex="0"
-         aria-label="Scrub through the year" aria-valuemin="1" aria-valuenow="1">
+         aria-label="Scrub through 2026" aria-valuemin="1" aria-valuenow="1">
       <div class="scrub-bars" id="scrubBars"></div>
       <div class="scrub-window" id="scrubWindow"></div>
     </div>

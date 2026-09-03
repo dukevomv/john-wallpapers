@@ -82,9 +82,9 @@
  ],
  "_manual": "Photos with no GPS at all. Fill in a label here and re-run build.py.",
  "manual": {
-  "IMG20260111161443.jpg": "",
-  "IMG20260117152951.jpg": "",
-  "IMG20260117172216~2.jpg": "",
-  "IMG20260129105306.jpg": ""
+  "IMG20260111161443.jpg": "Haarlem, Netherlands",
+  "IMG20260117152951.jpg": "Haarlem, Netherlands",
+  "IMG20260117172216~2.jpg": "Haarlem, Netherlands",
+  "IMG20260129105306.jpg": "Haarlem, Netherlands"
  }
 }
