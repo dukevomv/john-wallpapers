@@ -304,6 +304,19 @@ def main():
 
     data.sort(key=lambda x: x['id'], reverse=True)   # newest first
 
+    # Prune titles for photographs that have left the source, so a deleted
+    # frame leaves nothing behind anywhere.
+    live_names = {e['src'] for e in data}
+    live_ids = {e['id'] for e in data}
+    dropped = [n for n in titles
+               if n not in live_names
+               and (parts_from_name(n) is None or slug_of(parts_from_name(n))[0] not in live_ids)]
+    if dropped:
+        for n in dropped:
+            titles.pop(n)
+        with open(TITLES, 'w') as f:
+            json.dump(titles, f, indent=1, ensure_ascii=False)
+
     # Sweep generated files whose photograph is no longer in the source, so a
     # removed frame can't linger in the deploy.
     keep = {e['id'] for e in data}
@@ -352,6 +365,9 @@ def main():
           f' · {built} newly built · {removed} stale files swept · index.js written')
     if skipped:
         print(f'{len(skipped)} skipped — not from {YEAR}: ' + ', '.join(skipped[:6]))
+    if dropped:
+        print(f'{len(dropped)} title entries pruned for deleted photographs: '
+              + ', '.join(dropped[:6]))
     if undated:
         print(f'{len(undated)} skipped — no date in the filename and none in EXIF: '
               + ', '.join(undated[:6]))
