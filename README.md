@@ -84,9 +84,12 @@ coordinates themselves never reach the website.
   saving, the site tells the visitor the two remaining steps for their platform.
 
 **Timeline** — reached by the accent-filled button in the header. One long
-horizontal strip you flick or drag through, grouped by month and running
-oldest to newest, left to right, so it reads as a year. It opens scrolled to
-the right-hand end — at now. Frames stay in the order they were shot, so a burst
+horizontal strip you flick or drag through, in one of two groupings:
+
+- **By month** — running oldest to newest, left to right, so it reads as a year.
+  It opens scrolled to the right-hand end, at now.
+- **By place** — country headings, each broken into its cities, biggest first.
+  Same layout, same sliding; a different way through the same frames. Frames stay in the order they were shot, so a burst
 from one afternoon still sits side by side. No exact dates are published
 anywhere; the month is as fine as it gets. Two rows, and on a wide screen a
 month with an odd number of frames ends on a large card, which is what gives the
@@ -130,7 +133,10 @@ what a screen reader reads out, so they're worth writing.
 
 **Locations** are matched automatically from GPS against the list in
 `places.json`. If a new photo lands somewhere new, `build.py` reports it with no
-location; add a row (label, lat, lon, radius in km) and re-run. Photos with no
+location; add a row (label, city, country, lat, lon, radius in km) and re-run.
+`city` and `country` are what the "By place" timeline groups on — they're stored
+explicitly because a country can't be parsed off a label ("Chania, Crete" is in
+Greece). Photos with no
 GPS at all go in the `manual` block, keyed by filename.
 
 The four January frames carry no GPS at all; they're set to Haarlem by hand in
