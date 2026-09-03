@@ -72,16 +72,22 @@ def gps_of(im):
 
 def place_of(coords, filename, places):
     """The matched place row, or {}. Returns the whole row so city and country
-    come along for the 'By place' timeline."""
-    if not coords:
-        manual = places.get('manual', {}).get(filename, '')
-        if not manual:
-            return {}
+    come along for the 'By place' timeline.
+
+    `manual` is an outright override and is checked first — it used to be
+    consulted only when GPS was missing, which meant a photo whose coordinates
+    fell outside every radius silently lost its location with no way to set one.
+    """
+    manual = places.get('manual', {}).get(filename, '')
+    if manual:
         for p in places['places']:
             if p['label'] == manual:
                 return p
         head, _, tail = manual.partition(',')
         return {'label': manual, 'city': head.strip(), 'country': tail.strip()}
+
+    if not coords:
+        return {}
 
     lat, lon = coords
     best, best_km = {}, 1e9

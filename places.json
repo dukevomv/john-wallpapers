@@ -104,6 +104,54 @@
    "radiusKm": 10,
    "city": "Preveza",
    "country": "Greece"
+  },
+  {
+   "label": "Uitgeest, Netherlands",
+   "city": "Uitgeest",
+   "country": "Netherlands",
+   "lat": 52.5254,
+   "lon": 4.7086,
+   "radiusKm": 12
+  },
+  {
+   "label": "Brindisi, Italy",
+   "city": "Brindisi",
+   "country": "Italy",
+   "lat": 40.6327,
+   "lon": 17.9418,
+   "radiusKm": 18
+  },
+  {
+   "label": "Heraklion, Crete",
+   "city": "Heraklion",
+   "country": "Greece",
+   "lat": 35.3387,
+   "lon": 25.1442,
+   "radiusKm": 15
+  },
+  {
+   "label": "Rethymno, Crete",
+   "city": "Rethymno",
+   "country": "Greece",
+   "lat": 35.3662,
+   "lon": 24.4826,
+   "radiusKm": 14
+  },
+  {
+   "label": "Agios Nikolaos, Crete",
+   "city": "Agios Nikolaos",
+   "country": "Greece",
+   "lat": 35.1908,
+   "lon": 25.7175,
+   "radiusKm": 14
+  },
+  {
+   "label": "Mount Olympus, Greece",
+   "city": "Mount Olympus",
+   "country": "Greece",
+   "lat": 40.0886,
+   "lon": 22.3583,
+   "radiusKm": 22
   }
  ],
  "_manual": "Photos with no GPS at all. Fill in a label here and re-run build.py.",

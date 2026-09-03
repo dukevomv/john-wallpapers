@@ -55,13 +55,21 @@ Nothing is typed per-photo.
 Add a row and re-run. Keep labels at city/area level: the coordinates
 themselves are never published, and that's deliberate.
 
-**A photo with no GPS at all** goes in the `manual` block, keyed by filename:
+**`manual` is an outright override**, keyed by filename, and it is checked
+*before* GPS:
 
 ```json
 "manual": { "IMG20260111161443.jpg": "Haarlem, Netherlands" }
 ```
 
 The value must match an existing `label` so city and country come along with it.
+Use it for a photo with no GPS, or to correct one whose coordinates are wrong.
+
+> It used to be consulted only when GPS was **absent**, which meant a photo whose
+> coordinates fell outside every `radiusKm` lost its location *and* couldn't be
+> given one by hand. If a frame comes back unlocated, check its GPS before
+> assuming it has none — the fix is usually a new row in `places`, not a manual
+> entry.
 
 ## 3. Titles and captions are the one hand-written part
 

@@ -260,7 +260,7 @@ function render(item) {
   $('#nextBtn').disabled = state.index === W.length - 1;
 }
 
-function goTo(i, { instant = false } = {}) {
+function goTo(i, { instant = false, quiet = false } = {}) {
   i = clamp(i, 0, W.length - 1);
   const changed = i !== state.index;
   state.index = i;
@@ -276,7 +276,7 @@ function goTo(i, { instant = false } = {}) {
   applyPalette(item);
   render(item);
   preload(i);
-  if (changed || !location.hash.startsWith('#/w/')) {
+  if (!quiet && (changed || !location.hash.startsWith('#/w/'))) {
     history.replaceState(null, '', `#/w/${item.id}`);
   }
 }
@@ -1010,6 +1010,49 @@ addEventListener('keydown', e => {
   if (k === 'g') state.view === 'stage' ? showGallery() : showStage();
 });
 
+/* ── the opener: a spin that settles on one frame ────────── */
+function randomIndex(not) {
+  let i;
+  do { i = Math.floor(Math.random() * W.length); } while (W.length > 1 && i === not);
+  return i;
+}
+
+/* Flicks through a handful of frames and slows into the target. Deliberately a
+   small pool — every distinct frame is an image fetch, and the placeholder
+   blur carries the ones that haven't loaded, which is most of the effect. */
+function spinTo(target) {
+  if (reduce) { goTo(target, { instant: true }); return; }
+
+  const pool = [];
+  while (pool.length < 5) {
+    const i = randomIndex(target);
+    if (!pool.includes(i)) pool.push(i);
+  }
+  const seq = [...pool, pool[0], pool[2], pool[1], target];
+
+  el.body.classList.add('spinning');
+  let n = 0;
+  const step = () => {
+    goTo(seq[n], { instant: true, quiet: n < seq.length - 1 });
+    n++;
+    if (n >= seq.length) {
+      el.body.classList.remove('spinning');
+      return;
+    }
+    setTimeout(step, 68 + Math.pow(n / seq.length, 2.6) * 340);
+  };
+  step();
+}
+
+(function welcome() {
+  const box = $('#welcome'), go = $('#welcomeGo');
+  go.addEventListener('click', () => {
+    box.classList.add('out');
+    setTimeout(() => { box.hidden = true; box.classList.remove('out'); }, 400);
+    spinTo(randomIndex(state.index));
+  });
+})();
+
 /* ── boot ────────────────────────────────────────────────── */
 function boot() {
   $('#footAuthor').textContent = SITE.author;
@@ -1038,8 +1081,17 @@ function boot() {
   const hash = location.hash;
   const m = hash.match(/#\/w\/(.+)$/);
   const start = m ? W.findIndex(x => x.id === m[1]) : -1;
-  goTo(start >= 0 ? start : 0, { instant: true });
-  if (hash === '#/all') showGallery();
+
+  if (start >= 0) {
+    goTo(start, { instant: true });          // a shared link opens on its frame
+  } else if (hash === '#/all') {
+    goTo(0, { instant: true });
+    showGallery();
+  } else {
+    // bare index: something behind the welcome, then a spin on the way in
+    goTo(randomIndex(-1), { instant: true, quiet: true });
+    $('#welcome').hidden = false;
+  }
 
   loadCounts();
   requestAnimationFrame(() => el.body.classList.remove('is-loading'));
