@@ -99,9 +99,11 @@ reported — that's the only way to lose one.
 
 Precedence, highest first:
 
-1. a `titles.json` entry keyed by **this exact filename** — a deliberate
-   correction, and the way to write something a filename can't hold (an
-   apostrophe, or a spelling the file gets wrong)
+1. a `titles.json` entry keyed by **the frame's id** (`2026-07-12-205429`) or by
+   its exact filename — a deliberate correction, and the way to write something
+   a filename can't hold: an apostrophe, or a spelling the file gets wrong.
+   **Prefer the id key** — a filename key is dropped the moment you rename the
+   file, an id key survives every rename.
 2. the title derived from the filename
 3. whatever the id already had
 

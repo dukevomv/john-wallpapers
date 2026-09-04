@@ -306,7 +306,8 @@ def main():
         # correction and wins; otherwise the filename names it; otherwise
         # whatever the id already had. Captions always fall back by id, so a
         # rename never loses the alt text.
-        exact = titles.get(filename) or {}
+        # keyed by filename, or by id — an id key survives any rename
+        exact = titles.get(filename) or titles.get(slug) or {}
         prior = titles_by_slug.get(slug) or {}
         from_name = title_in_filename(filename)
         where = place_of(coords, filename, places, slug, manual_by_id)
@@ -340,6 +341,7 @@ def main():
     live_ids = {e['id'] for e in data}
     dropped = [n for n in titles
                if n not in live_names
+               and n not in live_ids
                and (parts_from_name(n) is None or slug_of(parts_from_name(n))[0] not in live_ids)]
     if dropped:
         for n in dropped:
