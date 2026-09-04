@@ -1,12 +1,4 @@
 {
- "IMG20260111161443.jpg": {
-  "title": "Winter Spire",
-  "caption": "Bare branches frame a gothic tower against a pale January sky."
- },
- "IMG20260117152951.jpg": {
-  "title": "Green Crown",
-  "caption": "A verdigris dome and slate turrets stacked into low winter cloud."
- },
  "IMG20260117172216~2.jpg": {
   "title": "Dusk Lattice",
   "caption": "A tangle of black branches over the last pink of the afternoon."
@@ -55,17 +47,9 @@
   "title": "Candlelight",
   "caption": "A single candle burning in a brick niche."
  },
- "IMG20260522160907~2.jpg": {
-  "title": "Stone Tower",
-  "caption": "A rough stone tower and its cross against clear blue."
- },
  "IMG20260522213214~2.jpg": {
   "title": "Wall Rabbit",
   "caption": "A spray-painted rabbit keeping watch over a brick wall."
- },
- "IMG20260526185403.jpg": {
-  "title": "Lattice Tower",
-  "caption": "Red steel latticework climbing into the blue."
  },
  "IMG20260531195223.jpg": {
   "title": "Stone Skin",
@@ -74,10 +58,6 @@
  "IMG20260531195438.jpg": {
   "title": "Fracture",
   "caption": "Rock breaking into geometry."
- },
- "IMG20260624081231.jpg": {
-  "title": "Far Shore",
-  "caption": "Hills stacked in blue layers across the water."
  },
  "IMG20260624081251.jpg": {
   "title": "Blue Distance",
@@ -99,10 +79,6 @@
   "title": "Evening Strait",
   "caption": "Cool water, cooler hills, the day going out."
  },
- "IMG20260624082846.jpg": {
-  "title": "Headland",
-  "caption": "Green rock meeting deep blue."
- },
  "IMG20260712205429.jpg": {
   "title": "Lighthouse",
   "caption": "A harbour light in silhouette against an orange sky."
@@ -122,10 +98,6 @@
  "IMG20260626100506.jpg": {
   "title": "The Lookout",
   "caption": "A bird holding the corner of a balcony against a hard blue sky."
- },
- "IMG20260117155609~2.jpg": {
-  "title": "Low Winter Sun",
-  "caption": "A gravel path curving off through bare trees, the sun caught low between them."
  },
  "IMG20260117192049.jpg": {
   "title": "Spire at Night",
@@ -178,10 +150,6 @@
  "IMG20260405141031~2.jpg": {
   "title": "Regatta",
   "caption": "Sails scattered across the gulf, a channel marker standing in front."
- },
- "IMG20260407190526.jpg": {
-  "title": "Above the City",
-  "caption": "Rock and scrub on a hilltop, the city hazy and flat below."
  },
  "IMG20260430194853.jpg": {
   "title": "Green Tunnel",
@@ -250,5 +218,9 @@
  "Sometimes its right there.jpg": {
   "title": "Sometimes It's Right There",
   "caption": "A tangle of black branches over the last pink of the afternoon."
+ },
+ "wont climb itself.jpg": {
+  "title": "Won't Climb Itself",
+  "caption": "A whole mountainside of trees under building cloud."
  }
 }
